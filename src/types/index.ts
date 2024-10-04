@@ -46,3 +46,16 @@ export interface SearchData {
   del_date_start: string;
   del_date_end: string;
 }
+
+export interface RateItem {
+  id: number;
+  rate_number: number,
+  search_number: string;
+  dead_head: number;
+  min_miles: number;
+  max_miles: number;
+  RPM: number;
+  min_rate: number;
+  round_to: number;
+  extra: number;
+}

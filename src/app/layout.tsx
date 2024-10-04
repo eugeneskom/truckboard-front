@@ -16,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="pt-24">
-        <div className="fixed left-0 right-0 px-11 py-3 top-0 z-50 bg-white">
+        <div className="fixed left-0 right-0 px-11 py-3 top-0 z-50 bg-neutral-900">
         <Header />
         </div>
         {children}
