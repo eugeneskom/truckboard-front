@@ -21,6 +21,7 @@ async function CarrierList() {
   const data: CarrierData[] = await fetchCarrierData(); // Fetch data server-side
 
   return (
+    
     <CarriersList data={data} />
   )
 }

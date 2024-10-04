@@ -7,6 +7,10 @@ import { useState } from "react";
 import { Button } from "../../ui/button";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import RemoveBtn from "@/components/buttons/RemoveBtn";
+import EditBtn from "@/components/buttons/EditBtn";
+import SaveBtn from "@/components/buttons/SaveBtn";
+import UndoBtn from "@/components/buttons/UndoBtn";
 
 // Define the props interface that will be passed to your page component
 interface TableProps {
@@ -67,13 +71,13 @@ function CarriersList({ data }: TableProps) {
     } catch (error) {
       console.error("Remove carrier error:", error);
     }
-  }
+  };
 
   console.log(editingData);
 
   return (
     <>
-      <Table>
+      <Table className="mb-20">
         <TableCaption>A list of carriers.</TableCaption>
         <TableHeader>
           <TableRow>
@@ -86,8 +90,9 @@ function CarriersList({ data }: TableProps) {
             <TableHead>Company Phone</TableHead>
             <TableHead>Truck Type Spam</TableHead>
             <TableHead>Spam</TableHead>
-            <TableHead colSpan={2} className="text-center">Actions</TableHead>
-
+            <TableHead colSpan={2} className="text-center">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -110,7 +115,11 @@ function CarriersList({ data }: TableProps) {
                     );
                   })}
                   <TableCell>
-                    <Button onClick={() => handleUpdateCarrier(item.carrier_number)}>Save</Button>
+                    <SaveBtn onClick={() => handleUpdateCarrier(item.carrier_number)} />
+                    {/* <Button onClick={() => handleUpdateCarrier(item.carrier_number)}>Save</Button> */}
+                  </TableCell>
+                  <TableCell>
+                    <UndoBtn onClick={() => handleUpdateCarrier("null")} />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -119,28 +128,30 @@ function CarriersList({ data }: TableProps) {
                     return <TableCell key={key}>{value}</TableCell>;
                   })}
                   <TableCell>
-                    <Button onClick={() => setEditingRowHandler(index)}>Edit</Button>
+                    <EditBtn onClick={() => setEditingRowHandler(index)} />
+                    {/* <Button onClick={() => setEditingRowHandler(index)}>Edit</Button> */}
                   </TableCell>
                   <TableCell>
-                    <Button onClick={() => handleRemoveCarrier(item.carrier_number)}>Remove</Button>
+                    <RemoveBtn onClick={() => handleRemoveCarrier(item.carrier_number)} />
+                    {/* <Button onClick={() => handleRemoveCarrier(item.carrier_number)}>Remove</Button> */}
                   </TableCell>
                 </TableRow>
               )}
             </>
           ))}
           <TableRow>
-            {!isAddNew && (
-              <TableCell>
-                <Button
-                  className="w-full"
-                  onClick={() => {
-                    setIsAddNew(!isAddNew);
-                  }}
-                >
-                  Add A New Carrier
-                </Button>
-              </TableCell>
-            )}
+            {/* {!isAddNew && ( */}
+            <TableCell>
+              <Button
+                className={`$mt-4 fixed z-10 bottom-2 right-2 ${isAddNew ? "bg-red-500 hover:bg-red-700" : "bg-blue-400 hover:bg-blue-600"}`}
+                onClick={() => {
+                  setIsAddNew(!isAddNew);
+                }}
+              >
+                {isAddNew ? "x" : "+"}
+              </Button>
+            </TableCell>
+            {/* )} */}
           </TableRow>
         </TableBody>
       </Table>
