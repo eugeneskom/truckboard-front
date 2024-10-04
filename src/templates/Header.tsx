@@ -36,6 +36,12 @@ function Header() {
               </Link>
             </NavigationMenuItem>
 
+            <NavigationMenuItem>
+              <Link href="/rate-list" legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>Rate List</NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+
           </NavigationMenuList>
         </NavigationMenu>
     </header>
