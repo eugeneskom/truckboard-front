@@ -4,7 +4,7 @@ import React from 'react'
 
 
 async function fetchTrucksData(): Promise<TruckData[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}api/truck-list`,{
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}api/trucks`,{
     cache: "no-cache",
   }); // Fetch data from the server
   console.log('process.env.NEXT_PUBLIC_SERVER_URL',process.env.NEXT_PUBLIC_SERVER_URL)

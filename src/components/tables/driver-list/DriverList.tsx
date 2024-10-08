@@ -21,6 +21,8 @@ function DriverList({ data }: TableProps) {
   const [editingData, setEditingData] = useState<DriverData | null>(null);
   const [isAddNew, setIsAddNew] = useState<boolean>(false);
 
+  console.log("DriverList", data);
+
   const setEditingRowHandler = (index: number) => {
     setEditingRow(index);
     setEditingData(data[index]);
@@ -30,7 +32,7 @@ function DriverList({ data }: TableProps) {
     if (editingData) {
       setEditingData((prevState) => ({
         ...prevState!,
-        [key]: key === "driver_number" || key === "carrier_number" 
+        [key]: key === "id" || key === "carrier_id" 
           ? Number(value) 
           : value,
       }));
@@ -80,22 +82,22 @@ function DriverList({ data }: TableProps) {
               {editingRow === index ? (
                 <>
                   <TableCell>
-                    <input className="w-full p-1 border rounded" type="number" value={editingData?.driver_number} onChange={(e) => handleEditingData("driver_number", e.target.value)} />
+                    <input className="w-full p-1 border rounded" type="number" value={editingData?.id} onChange={(e) => handleEditingData("id", e.target.value)} />
                   </TableCell>
                   <TableCell>
-                    <input className="w-full p-1 border rounded" type="number" value={editingData?.carrier_number} onChange={(e) => handleEditingData("carrier_number", e.target.value)} />
+                    <input className="w-full p-1 border rounded" type="number" value={editingData?.carrier_id} onChange={(e) => handleEditingData("carrier_id", e.target.value)} />
                   </TableCell>
                   <TableCell>
-                    <input className="w-full p-1 border rounded" type="text" value={editingData?.driver_name} onChange={(e) => handleEditingData("driver_name", e.target.value)} />
+                    <input className="w-full p-1 border rounded" type="text" value={editingData?.name} onChange={(e) => handleEditingData("name", e.target.value)} />
                   </TableCell>
                   <TableCell>
-                    <input className="w-full p-1 border rounded" type="text" value={editingData?.driver_lastname} onChange={(e) => handleEditingData("driver_lastname", e.target.value)} />
+                    <input className="w-full p-1 border rounded" type="text" value={editingData?.lastname} onChange={(e) => handleEditingData("lastname", e.target.value)} />
                   </TableCell>
                   <TableCell>
-                    <input className="w-full p-1 border rounded" type="text" value={editingData?.driver_phone} onChange={(e) => handleEditingData("driver_phone", e.target.value)} />
+                    <input className="w-full p-1 border rounded" type="text" value={editingData?.phone} onChange={(e) => handleEditingData("phone", e.target.value)} />
                   </TableCell>
                   <TableCell>
-                    <input className="w-full p-1 border rounded" type="email" value={editingData?.driver_email} onChange={(e) => handleEditingData("driver_email", e.target.value)} />
+                    <input className="w-full p-1 border rounded" type="email" value={editingData?.email} onChange={(e) => handleEditingData("email", e.target.value)} />
                   </TableCell>
                   <TableCell>
                     <input className="w-full p-1 border rounded" type="text" value={editingData?.perks} onChange={(e) => handleEditingData("perks", e.target.value)} />
@@ -110,12 +112,12 @@ function DriverList({ data }: TableProps) {
                 </>
               ) : (
                 <>
-                  <TableCell>{item.driver_number}</TableCell>
-                  <TableCell>{item.carrier_number}</TableCell>
-                  <TableCell>{item.driver_name}</TableCell>
-                  <TableCell>{item.driver_lastname}</TableCell>
-                  <TableCell>{item.driver_phone}</TableCell>
-                  <TableCell>{item.driver_email}</TableCell>
+                  <TableCell>{item.id}</TableCell>
+                  <TableCell>{item.carrier_id}</TableCell>
+                  <TableCell>{item.name}</TableCell>
+                  <TableCell>{item.lastname}</TableCell>
+                  <TableCell>{item.phone}</TableCell>
+                  <TableCell>{item.email}</TableCell>
                   <TableCell>{item.perks}</TableCell>
                   <TableCell>
                     <EditBtn onClick={() => setEditingRowHandler(index)} />

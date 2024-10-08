@@ -2,7 +2,7 @@
 // Import necessary React and Next.js types
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import CarriersListAddNew from "./CarriersListAddNew";
-import { CarrierData } from "@/types";
+import { CarrierData, DriverData, TruckData } from "@/types";
 import { useState } from "react";
 import { Button } from "../../ui/button";
 import axios from "axios";
@@ -11,6 +11,8 @@ import RemoveBtn from "@/components/buttons/RemoveBtn";
 import EditBtn from "@/components/buttons/EditBtn";
 import SaveBtn from "@/components/buttons/SaveBtn";
 import UndoBtn from "@/components/buttons/UndoBtn";
+import AddTruck from "@/components/buttons/AddTruck";
+import CarrierDetails from "./CarrierDetails";
 
 // Define the props interface that will be passed to your page component
 interface TableProps {
@@ -21,9 +23,10 @@ interface TableProps {
 function CarriersList({ data }: TableProps) {
   const router = useRouter();
   const [editingRow, setEditingRow] = useState<number | null>(null);
+  const user = window.localStorage.getItem("user") ? JSON.parse(window.localStorage.getItem("user") || "") : null;
+
   const [editingData, setEditingData] = useState<CarrierData>({
-    carrier_number: "",
-    agent_number: "",
+    id: "",
     home_city: "",
     carrier_email: "",
     mc_number: "",
@@ -31,9 +34,24 @@ function CarriersList({ data }: TableProps) {
     company_phone: "",
     truck_type_spam: "",
     spam: false,
+    agent_id: user ? user.id : 0,
+    truck_count: 0,
+    driver_count: 0,
   });
-  const [isAddNew, setIsAddNew] = useState<boolean>(false);
+  const [truckData, setTruckData] = useState<TruckData>({
+    id: 0,
+    carrier_id: 0,
+    type: "",
+    dims: "",
+    payload: 0,
+    accessories: "",
+  });
 
+  const [isAddNew, setIsAddNew] = useState<boolean>(false);
+  const [isAddTruck, setIsAddTruck] = useState<number | undefined | string>(0);
+  const [carrierTrucks, setCarrierTrucks] = useState<TruckData[]>([]);
+  const [carriersDrivers, setCarriersDrivers] = useState<DriverData[]>([]);
+  console.log("editingData", editingData, carrierTrucks, carriersDrivers);
   const setEditingRowHandler = (index: number) => {
     setEditingRow(index);
     setEditingData(data[index]);
@@ -47,11 +65,16 @@ function CarriersList({ data }: TableProps) {
     });
   };
 
+
+  console.log("CarriersList: ", data);
+
   console.log("process.env.NEXT_PUBLIC_SERVER_URL", process.env.NEXT_PUBLIC_SERVER_URL);
 
-  const handleUpdateCarrier = async (carrier_number: string) => {
+  const handleUpdateCarrier = async (id: number | undefined | string) => {
+    if (!id) return setEditingRow(null);
     try {
-      const response = await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carrier-list/${carrier_number}`, editingData);
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers/${id}`, editingData);
+      // const response = await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carrier-list/${id}`, editingData);
       const updatedCarrierResp = response.data;
       console.log("updatedCarrierResp", updatedCarrierResp);
       setEditingRow(null);
@@ -62,9 +85,9 @@ function CarriersList({ data }: TableProps) {
     }
   };
 
-  const handleRemoveCarrier = async (carrier_number: string) => {
+  const handleRemoveCarrier = async (id: number | string | undefined) => {
     try {
-      const response = await axios.delete(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carrier-list/${carrier_number}`);
+      const response = await axios.delete(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers/${id}`);
       console.log("Carrier removed:", response.data);
       router.refresh();
       // Trigger revalidation after successful delete
@@ -75,14 +98,61 @@ function CarriersList({ data }: TableProps) {
 
   console.log(editingData);
 
+  const handleAddTruck = async (carrierId: string | number | undefined) => {
+    if (!carrierId) return console.log("handleAddTruck no carrierId : ", carrierId);
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/add/trucks`, {
+        ...truckData,
+        carrier_id: carrierId,
+      });
+      console.log("Truck added:", response.data, truckData);
+      setIsAddTruck(0);
+      setTruckData({
+        id: 0,
+        carrier_id: 0,
+        type: "",
+        dims: "",
+        payload: 0,
+        accessories: "",
+      });
+
+      router.refresh();
+    } catch (error) {
+      console.error("Add truck error:", error);
+    }
+  };
+
+  const handleGetTrucksByCarrier = async (id: number | string | undefined) => {
+    if (!id) return console.log("handleGetTrucksByCarrier no id : ", id);
+    try {
+      // const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers/${id}/details`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers/${id}/details`);
+
+      console.log("Trucks by carrier:", response.data);
+
+      if (response.data) {
+        setCarrierTrucks(response.data.trucks);
+        setCarriersDrivers(response.data.drivers);
+      }
+    } catch (error) {
+      console.error("Get trucks by carrier error:", error);
+    }
+  };
+
+  const handleFetchTrucks = async (id: number | undefined | string) => {
+    if (!id) return;
+    setIsAddTruck(id);
+    handleGetTrucksByCarrier(id);
+  };
+
   return (
     <>
       <Table className="mb-20">
         <TableCaption>A list of carriers.</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead>Carrier Number</TableHead>
-            <TableHead>Agent Number</TableHead>
+            <TableHead>Carrier Id</TableHead>
+            {/* <TableHead>Agent Number</TableHead> */}
             <TableHead>Home City</TableHead>
             <TableHead>Carrier Email</TableHead>
             <TableHead>MC Number</TableHead>
@@ -90,6 +160,8 @@ function CarriersList({ data }: TableProps) {
             <TableHead>Company Phone</TableHead>
             <TableHead>Truck Type Spam</TableHead>
             <TableHead>Spam</TableHead>
+            <TableHead>Drivers </TableHead>
+            <TableHead>Trucks</TableHead>
             <TableHead colSpan={2} className="text-center">
               Actions
             </TableHead>
@@ -97,7 +169,7 @@ function CarriersList({ data }: TableProps) {
         </TableHeader>
         <TableBody>
           {/* Iterate over the data array and render each row */}
-          {data.map((item, index) => (
+          {data.map((item:CarrierData, index:number) => (
             <>
               {editingRow === index ? (
                 <TableRow key={index}>
@@ -115,30 +187,103 @@ function CarriersList({ data }: TableProps) {
                     );
                   })}
                   <TableCell>
-                    <SaveBtn onClick={() => handleUpdateCarrier(item.carrier_number)} />
-                    {/* <Button onClick={() => handleUpdateCarrier(item.carrier_number)}>Save</Button> */}
+                    <SaveBtn onClick={() => handleUpdateCarrier(item.id)} />
+                    {/* <Button onClick={() => handleUpdateCarrier(item.id)}>Save</Button> */}
                   </TableCell>
                   <TableCell>
-                    <UndoBtn onClick={() => handleUpdateCarrier("null")} />
+                    <UndoBtn onClick={() => handleUpdateCarrier(0)} />
                   </TableCell>
                 </TableRow>
               ) : (
-                <TableRow key={index} className={`${index % 2 === 0 ? "" : "bg-slate-300 hover:bg-slate-50"}`}>
-                  {Object.entries(item).map(([key, value]) => {
-                    return <TableCell key={key}>{value}</TableCell>;
-                  })}
-                  <TableCell>
-                    <EditBtn onClick={() => setEditingRowHandler(index)} />
-                    {/* <Button onClick={() => setEditingRowHandler(index)}>Edit</Button> */}
-                  </TableCell>
-                  <TableCell>
-                    <RemoveBtn onClick={() => handleRemoveCarrier(item.carrier_number)} />
-                    {/* <Button onClick={() => handleRemoveCarrier(item.carrier_number)}>Remove</Button> */}
-                  </TableCell>
-                </TableRow>
+                <>
+                  <TableRow key={index} className={`${index % 2 === 0 ? "" : "bg-slate-300 hover:bg-slate-50"}`}>
+                    {Object.entries(item).map(([key, value]) => {
+                      return <TableCell key={key}>{value}</TableCell>;
+                    })}
+                    <TableCell>
+                      <EditBtn onClick={() => setEditingRowHandler(index)} />
+                    </TableCell>
+                    <TableCell>
+                      <RemoveBtn onClick={() => handleRemoveCarrier(item.id)} />
+                    </TableCell>
+                    <TableCell>
+                      <AddTruck onClick={() => handleFetchTrucks(item.id)} />
+                    </TableCell>
+                  </TableRow>
+                  {isAddTruck === item.id && (
+                    <>
+                      <TableRow>
+                        <CarrierDetails carrierId={item.id?.toString()} carrierTrucks={carrierTrucks} carriersDrivers={carriersDrivers} onUpdate={()=> console.log("Updated carrier details")}/>
+                        <TableCell colSpan={10}>
+                          <form
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              handleAddTruck(item.id);
+                            }}
+                          >
+                            <label>
+                              Truck Type:
+                              {/* <input type="text" placeholder="Type" value={truckData.type} onChange={(e) => setTruckData({ ...truckData, type: e.target.value })} /> */}
+                              <select onChange={(e) => setTruckData({ ...truckData, type: e.target.value as "" | "VH" | "SB" })}>
+                                <option value="VH">VH</option>
+                                <option value="SB">SB</option>
+                              </select>
+                            </label>
+                            <br />
+                            <label>
+                              {" "}
+                              Dims:
+                              <input type="text" placeholder="Dimensions" value={truckData.dims} onChange={(e) => setTruckData({ ...truckData, dims: e.target.value })} />
+                            </label>
+                            <br />
+                            <label>
+                              Payload:
+                              <input type="number" placeholder="Payload" value={truckData.payload} onChange={(e) => setTruckData({ ...truckData, payload: parseInt(e.target.value) })} />
+                            </label>
+                            <br />
+                            <label>
+                              Accessories:
+                              <input type="text" placeholder="Accessories" value={truckData.accessories} onChange={(e) => setTruckData({ ...truckData, accessories: e.target.value })} />
+                            </label>
+                            <br />
+                            <Button type="submit">Add Truck</Button>
+                          </form>
+                        </TableCell>
+                      </TableRow>
+
+                      <TableRow>
+                        <TableCell>
+                          <p>Id:</p>
+                        </TableCell>
+                        <TableCell>
+                          <p>Type:</p>
+                        </TableCell>
+                        <TableCell>
+                          <p>Dims: </p>
+                        </TableCell>
+                        <TableCell>
+                          <p>Payload</p>
+                        </TableCell>
+                        <TableCell>
+                          <p> Accessories</p>
+                        </TableCell>
+                      </TableRow>
+                      {carrierTrucks.map((truck) => (
+                        <TableRow key={truck.id}>
+                          <TableCell>{truck.id}</TableCell>
+                          <TableCell>{truck.type}</TableCell>
+                          <TableCell>{truck.dims}</TableCell>
+                          <TableCell>{truck.payload}</TableCell>
+                          <TableCell>{truck.accessories}</TableCell>
+                        </TableRow>
+                      ))}
+                    </>
+                  )}
+                </>
               )}
             </>
           ))}
+
           <TableRow>
             {/* {!isAddNew && ( */}
             <TableCell>
@@ -155,7 +300,7 @@ function CarriersList({ data }: TableProps) {
           </TableRow>
         </TableBody>
       </Table>
-      {isAddNew && <CarriersListAddNew setIsAddNew={setIsAddNew} />}
+      {isAddNew && <CarriersListAddNew setIsAddNew={setIsAddNew} user={user} />}
     </>
   );
 }

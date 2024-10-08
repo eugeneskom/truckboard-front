@@ -1,13 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Table, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { CarrierData } from "@/types";
+import { CarrierData, UserData } from "@/types";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
 const initialCarrierData: CarrierData = {
-  carrier_number: "",
-  agent_number: "",
+  agent_id: 0,
   home_city: "",
   carrier_email: "",
   mc_number: "",
@@ -15,18 +14,24 @@ const initialCarrierData: CarrierData = {
   company_phone: "",
   truck_type_spam: "",
   spam: false,
+  driver_count: 0,
+  truck_count: 0,
 };
 
 type CarriersListAddNewProps = {
   setIsAddNew: React.Dispatch<React.SetStateAction<boolean>>;
+  user: UserData;
 };
 
-function CarriersListAddNew({ setIsAddNew }: CarriersListAddNewProps) {
+function CarriersListAddNew({ setIsAddNew, user }: CarriersListAddNewProps) {
   const router = useRouter();
-  const [newCarrier, setNewCarrier] = useState<CarrierData>(initialCarrierData);
+  const [newCarrier, setNewCarrier] = useState<CarrierData>({
+    ...initialCarrierData,
+    agent_id: user && user.id ? Number(user.id) : 0,
+  });
 
   const componentRef = useRef<HTMLDivElement>(null);
-
+  console.log('newCarrier',newCarrier, user)
   const handleInputChange = (key: keyof CarrierData, value: string | boolean) => {
     setNewCarrier((prevState) => ({
       ...prevState,
@@ -36,7 +41,8 @@ function CarriersListAddNew({ setIsAddNew }: CarriersListAddNewProps) {
 
   const handleAddNewCarrier = async () => {
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carrier-list`, newCarrier);
+      const newCarrierUpdate = { ...newCarrier, agent_id: Number(user.id) };
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers`, newCarrierUpdate);
       console.log("New carrier added:", response.data);
       setNewCarrier(initialCarrierData);
       setIsAddNew(false);
@@ -53,13 +59,16 @@ function CarriersListAddNew({ setIsAddNew }: CarriersListAddNewProps) {
     }
   }, []);
 
+
+  if(!user) return null;
+
   return (
     <div ref={componentRef}>
     <Table >
       <TableCaption>Fill out carriers info</TableCaption>
       <TableHeader>
         <TableRow>
-          <TableHead>Carrier Number</TableHead>
+          {/* <TableHead>Carrier Number</TableHead> */}
           <TableHead>Agent Number</TableHead>
           <TableHead>Home City</TableHead>
           <TableHead>Carrier Email</TableHead>
@@ -80,6 +89,7 @@ function CarriersListAddNew({ setIsAddNew }: CarriersListAddNewProps) {
               onChange={(e) => handleInputChange(key as keyof CarrierData, e.target.type === "checkbox" ? e.target.checked : e.target.value)}
               className="w-full p-1 border rounded"
             />
+            {key}
           </TableCell>
         ))}
 

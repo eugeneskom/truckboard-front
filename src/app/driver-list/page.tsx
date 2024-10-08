@@ -3,7 +3,7 @@ import DriverList from '@/components/tables/driver-list/DriverList'
 import { DriverData } from '@/types';
 
 async function fetchDriversData(): Promise<DriverData[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}api/driver-list`,{
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}api/drivers`,{
     cache: "no-cache",
   }); // Fetch data from the server
   console.log('process.env.NEXT_PUBLIC_SERVER_URL',process.env.NEXT_PUBLIC_SERVER_URL)

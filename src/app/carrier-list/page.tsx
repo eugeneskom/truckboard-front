@@ -3,25 +3,28 @@ import CarriersList from '@/components/tables/carrier-list/CarriersList'
 import { CarrierData } from '@/types';
 
 
-async function fetchCarrierData(): Promise<CarrierData[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carrier-list`,{
+async function fetchCarrierData() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers`,{
     cache: "no-cache",
+    headers: {
+      'Content-Type': 'application/json',
+    },
   }); // Fetch data from the server
-  console.log('process.env.NEXT_PUBLIC_SERVER_URL',process.env.NEXT_PUBLIC_SERVER_URL)
+  const data = await res.json();
+  console.log('process.env.NEXT_PUBLIC_SERVER_URL',process.env.NEXT_PUBLIC_SERVER_URL, data)
 
   // Check if the response is okay
   if (!res.ok) {
     throw new Error("Failed to fetch data");
   }
 
-  return res.json();
+  return data;
 }
 
 async function CarrierList() {
   const data: CarrierData[] = await fetchCarrierData(); // Fetch data server-side
 
   return (
-    
     <CarriersList data={data} />
   )
 }

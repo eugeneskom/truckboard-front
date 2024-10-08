@@ -53,9 +53,11 @@ function TruckList({ data }: TableProps) {
         ...prevState!,
         [key]: key === "accessories" 
           ? (Array.isArray(value) ? value : parseAccessories(value as string))
-          : key === "truck_type" 
+          : key === "type" 
           ? (value as "VH" | "SB") 
-          : key === "truck_number" || key === "carrier_number" || key === "driver_number" || key === "payload" 
+          : key === "id" || key === "carrier_id" 
+          // || key === "driver_number" 
+          || key === "payload" 
           ? Number(value) 
           : value,
       }));
@@ -72,7 +74,7 @@ function TruckList({ data }: TableProps) {
           ? editingData.accessories.join(', ')
           : editingData?.accessories
       };
-      const response = await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/truck-list/${id}`, dataToUpdate);
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/trucks/${id}`, dataToUpdate);
       console.log("updatedTruckResp", response.data);
       setEditingRow(null);
       router.refresh();
@@ -83,7 +85,7 @@ function TruckList({ data }: TableProps) {
 
   const handleRemoveTruck = async (id: number) => {
     try {
-      const response = await axios.delete(`${process.env.NEXT_PUBLIC_SERVER_URL}api/truck-list/${id}`);
+      const response = await axios.delete(`${process.env.NEXT_PUBLIC_SERVER_URL}api/trucks/${id}`);
       console.log("Truck removed:", response.data);
       router.refresh();
     } catch (error) {
@@ -140,8 +142,8 @@ function TruckList({ data }: TableProps) {
             <TableHead>Truck Dimensions</TableHead>
             <TableHead>Payload</TableHead>
             <TableHead>Accessories</TableHead>
-            <TableHead>Driver Number</TableHead>
-            <TableHead>Driver Name</TableHead>
+            {/* <TableHead>Driver Number</TableHead> */}
+            {/* <TableHead>Driver Name</TableHead> */}
             <TableHead colSpan={2} className="text-center">
               Actions
             </TableHead>
@@ -153,14 +155,14 @@ function TruckList({ data }: TableProps) {
               {editingRow === index ? (
                 <>
                   <TableCell>
-                    <input className="w-full p-1 border rounded" type="number" value={editingData?.truck_number} onChange={(e) => handleEditingData("truck_number", e.target.value)} />
+                    <input className="w-full p-1 border rounded" type="number" value={editingData?.id} onChange={(e) => handleEditingData("id", e.target.value)} />
                   </TableCell>
                   <TableCell>
-                    <input className="w-full p-1 border rounded" type="number" value={editingData?.carrier_number} onChange={(e) => handleEditingData("carrier_number", e.target.value)} />
+                    <input className="w-full p-1 border rounded" type="number" value={editingData?.carrier_id} onChange={(e) => handleEditingData("carrier_id", e.target.value)} />
                   </TableCell>
                   <TableCell>
                     
-                    <Select value={editingData?.truck_type} onValueChange={(value) => handleEditingData("truck_type", value as "VH" | "SB")}>
+                    <Select value={editingData?.type} onValueChange={(value) => handleEditingData("type", value as "VH" | "SB")}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select truck type" />
                       </SelectTrigger>
@@ -176,30 +178,30 @@ function TruckList({ data }: TableProps) {
                       <input
                         className="w-1/3 p-1 border rounded"
                         type="text"
-                        value={splitDimensions(editingData?.truck_dims || "")[0]}
+                        value={splitDimensions(editingData?.dims || "")[0]}
                         onChange={(e) => {
-                          const [, width, height] = splitDimensions(editingData?.truck_dims || "");
-                          handleEditingData("truck_dims", `${e.target.value}x${width}x${height}`);
+                          const [, width, height] = splitDimensions(editingData?.dims || "");
+                          handleEditingData("dims", `${e.target.value}x${width}x${height}`);
                         }}
                         placeholder="Length"
                       />
                       <input
                         className="w-1/3 p-1 border rounded"
                         type="text"
-                        value={splitDimensions(editingData?.truck_dims || "")[1]}
+                        value={splitDimensions(editingData?.dims || "")[1]}
                         onChange={(e) => {
-                          const [length, , height] = splitDimensions(editingData?.truck_dims || "");
-                          handleEditingData("truck_dims", `${length}x${e.target.value}x${height}`);
+                          const [length, , height] = splitDimensions(editingData?.dims || "");
+                          handleEditingData("dims", `${length}x${e.target.value}x${height}`);
                         }}
                         placeholder="Width"
                       />
                       <input
                         className="w-1/3 p-1 border rounded"
                         type="text"
-                        value={splitDimensions(editingData?.truck_dims || "")[2]}
+                        value={splitDimensions(editingData?.dims || "")[2]}
                         onChange={(e) => {
-                          const [length, width] = splitDimensions(editingData?.truck_dims || "");
-                          handleEditingData("truck_dims", `${length}x${width}x${e.target.value}`);
+                          const [length, width] = splitDimensions(editingData?.dims || "");
+                          handleEditingData("dims", `${length}x${width}x${e.target.value}`);
                         }}
                         placeholder="Height"
                       />
@@ -210,11 +212,11 @@ function TruckList({ data }: TableProps) {
                   </TableCell>
                   <TableCell>{renderAccessories(editingData?.accessories || [], true, (newAccessories) => handleEditingData("accessories", newAccessories))}</TableCell>
                   <TableCell>
-                    <input className="w-full p-1 border rounded" type="number" value={editingData?.driver_number} onChange={(e) => handleEditingData("driver_number", e.target.value)} />
+                    <input className="w-full p-1 border rounded" type="number" value={editingData?.id} onChange={(e) => handleEditingData("id", e.target.value)} />
                   </TableCell>
-                  <TableCell>
-                    <input className="w-full p-1 border rounded" type="text" value={editingData?.Driver_name} onChange={(e) => handleEditingData("Driver_name", e.target.value)} />
-                  </TableCell>
+                  {/* <TableCell>
+                    <input className="w-full p-1 border rounded" type="text" value={editingData?.name} onChange={(e) => handleEditingData("name", e.target.value)} />
+                  </TableCell> */}
                   <TableCell>
                     <SaveBtn onClick={() => handleUpdateTruck(item.id)} />
                     {/* <Button onClick={() => handleUpdateTruck(item.id)}>Save</Button> */}
@@ -226,14 +228,14 @@ function TruckList({ data }: TableProps) {
                 </>
               ) : (
                 <>
-                  <TableCell>{item.truck_number}</TableCell>
-                  <TableCell>{item.carrier_number}</TableCell>
-                  <TableCell>{item.truck_type}</TableCell>
-                  <TableCell>{item.truck_dims}</TableCell>
+                  <TableCell>{item.id}</TableCell>
+                  <TableCell>{item.carrier_id}</TableCell>
+                  <TableCell>{item.type}</TableCell>
+                  <TableCell>{item.dims}</TableCell>
                   <TableCell>{item.payload}</TableCell>
                   <TableCell>{parseAccessories(item.accessories).join(", ")}</TableCell>
-                  <TableCell>{item.driver_number}</TableCell>
-                  <TableCell>{item.Driver_name}</TableCell>
+                  {/* <TableCell>{item.driver_id}</TableCell> */}
+                  {/* <TableCell>{item.name}</TableCell> */}
                   <TableCell>
                     <EditBtn onClick={() => setEditingRowHandler(index)} />
                     {/* <Button onClick={() => setEditingRowHandler(index)}>Edit</Button> */}
