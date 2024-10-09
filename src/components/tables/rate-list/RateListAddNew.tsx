@@ -9,8 +9,7 @@ import { RateItem } from "@/types";
 
 const initialRateData: RateItem = {
   id: 0,
-  rate_number: 0,
-  search_number: "",
+  search_id: 0,
   dead_head: 0,
   min_miles: 0,
   max_miles: 0,
@@ -32,7 +31,7 @@ function RateListAddNew({ setIsAddNew }: RateListAddNewProps) {
   const handleInputChange = (key: keyof RateItem, value: string | number) => {
     setNewRate((prevState) => ({
       ...prevState,
-      [key]: key === 'search_number' ? value : Number(value),
+      [key]: key === 'search_id' ? value : Number(value),
     }));
   };
 

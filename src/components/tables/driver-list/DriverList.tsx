@@ -41,7 +41,7 @@ function DriverList({ data }: TableProps) {
 
   const handleUpdateDriver = async (id: number) => {
     try {
-      const response = await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/driver-list/${id}`, editingData);
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/drivers/${id}`, editingData);
       console.log("updatedDriverResp", response.data);
       setEditingRow(null);
       router.refresh();
@@ -52,7 +52,7 @@ function DriverList({ data }: TableProps) {
 
   const handleRemoveDriver = async (id: number) => {
     try {
-      const response = await axios.delete(`${process.env.NEXT_PUBLIC_SERVER_URL}api/driver-list/${id}`);
+      const response = await axios.delete(`${process.env.NEXT_PUBLIC_SERVER_URL}api/drivers/${id}`);
       console.log("Driver removed:", response.data);
       router.refresh();
     } catch (error) {

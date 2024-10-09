@@ -22,8 +22,7 @@ function RateList({ data }: RateListProps) {
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [editingData, setEditingData] = useState<RateItem>({
     id: 0,
-    rate_number: 0,
-    search_number: "",
+    search_id: 0,
     dead_head: 0,
     min_miles: 0,
     max_miles: 0,
@@ -42,7 +41,7 @@ function RateList({ data }: RateListProps) {
   const handleEditingData = (index: number, key: string, value: string | number) => {
     setEditingData((prevState) => ({
       ...prevState,
-      [key]: key === 'search_number' ? value : Number(value),
+      [key]: key === 'search_id' ? value : Number(value),
     }));
   };
 

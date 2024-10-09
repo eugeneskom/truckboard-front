@@ -15,7 +15,7 @@ export default function Login() {
     e.preventDefault();
     setError("");
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/login`, { email, password },
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/auth/login`, { email, password },
         { withCredentials: true } // This is important for sending cookies
       );
       console.log('Login response:', response.data);
