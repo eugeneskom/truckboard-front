@@ -12,7 +12,7 @@ export default function Dashboard() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}api/check-auth`, { withCredentials: true });
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}api/auth/check-auth`, { withCredentials: true });
         if (response.data.authenticated) {
           setUser(response.data.user);
           localStorage.setItem('user', JSON.stringify(response.data.user));

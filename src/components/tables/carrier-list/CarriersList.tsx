@@ -12,7 +12,9 @@ import EditBtn from "@/components/buttons/EditBtn";
 import SaveBtn from "@/components/buttons/SaveBtn";
 import UndoBtn from "@/components/buttons/UndoBtn";
 import AddTruck from "@/components/buttons/AddTruck";
-import CarrierDetails from "./CarrierDetails";
+import CarrierTrucksDetails from "./CarrierTrucksDetails";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import CarrierDriversDetails from "./CarrierDriversDetails";
 
 // Define the props interface that will be passed to your page component
 interface TableProps {
@@ -26,7 +28,7 @@ function CarriersList({ data }: TableProps) {
   const user = window.localStorage.getItem("user") ? JSON.parse(window.localStorage.getItem("user") || "") : null;
 
   const [editingData, setEditingData] = useState<CarrierData>({
-    id: "",
+    id: 0,
     home_city: "",
     carrier_email: "",
     mc_number: "",
@@ -46,6 +48,16 @@ function CarriersList({ data }: TableProps) {
     payload: 0,
     accessories: "",
   });
+  const [driverData, setDriverData] = useState<DriverData>({
+    id: 0,
+    carrier_id: 0,
+    name: "",
+    lastname: "",
+    phone: "",
+    email: "",
+    perks: "",
+    truck_id: 0,
+  });
 
   const [isAddNew, setIsAddNew] = useState<boolean>(false);
   const [isAddTruck, setIsAddTruck] = useState<number | undefined | string>(0);
@@ -64,7 +76,6 @@ function CarriersList({ data }: TableProps) {
       };
     });
   };
-
 
   console.log("CarriersList: ", data);
 
@@ -122,6 +133,31 @@ function CarriersList({ data }: TableProps) {
     }
   };
 
+  const handleAddDriver = async (
+    // truck_id: number,
+    carrierId: string | number | undefined
+  ) => {
+    if (!carrierId) return console.log("handleAddDriver no carrierId : ", carrierId);
+    try {
+      const params = { ...driverData, carrier_id: carrierId }; // for now set initial truck_id to 0 so it does not belong to any truck
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/drivers`, params);
+      console.log("Driver added:", response.data, truckData);
+      setIsAddTruck(0);
+      setTruckData({
+        id: 0,
+        carrier_id: 0,
+        type: "",
+        dims: "",
+        payload: 0,
+        accessories: "",
+      });
+
+      router.refresh();
+    } catch (error) {
+      console.error("Add driver error:", error);
+    }
+  };
+
   const handleGetTrucksByCarrier = async (id: number | string | undefined) => {
     if (!id) return console.log("handleGetTrucksByCarrier no id : ", id);
     try {
@@ -169,7 +205,7 @@ function CarriersList({ data }: TableProps) {
         </TableHeader>
         <TableBody>
           {/* Iterate over the data array and render each row */}
-          {data.map((item:CarrierData, index:number) => (
+          {data.map((item: CarrierData, index: number) => (
             <>
               {editingRow === index ? (
                 <TableRow key={index}>
@@ -213,8 +249,7 @@ function CarriersList({ data }: TableProps) {
                   {isAddTruck === item.id && (
                     <>
                       <TableRow>
-                        <CarrierDetails carrierId={item.id?.toString()} carrierTrucks={carrierTrucks} carriersDrivers={carriersDrivers} onUpdate={()=> console.log("Updated carrier details")}/>
-                        <TableCell colSpan={10}>
+                        <TableCell colSpan={6}>
                           <form
                             onSubmit={(e) => {
                               e.preventDefault();
@@ -245,45 +280,58 @@ function CarriersList({ data }: TableProps) {
                               Accessories:
                               <input type="text" placeholder="Accessories" value={truckData.accessories} onChange={(e) => setTruckData({ ...truckData, accessories: e.target.value })} />
                             </label>
+
                             <br />
                             <Button type="submit">Add Truck</Button>
                           </form>
                         </TableCell>
+                        <TableCell colSpan={6}>
+                          <input type="text" placeholder="Driver Name" value={driverData.name} onChange={(e) => setDriverData({ ...driverData, name: e.target.value })} />
+                          <input type="text" placeholder="Last Name" value={driverData.lastname} onChange={(e) => setDriverData({ ...driverData, lastname: e.target.value })} />
+                          <input type="text" placeholder="Phone Number" value={driverData.phone} onChange={(e) => setDriverData({ ...driverData, phone: e.target.value })} />
+                          <input type="email" placeholder="Email" value={driverData.email} onChange={(e) => setDriverData({ ...driverData, email: e.target.value })} />
+                          <input type="text" placeholder="Perks" value={driverData.perks} onChange={(e) => setDriverData({ ...driverData, perks: e.target.value })} />
+                          <Select onValueChange={(truckId) => setDriverData({ ...driverData, truck_id: Number(truckId) })}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a truck" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {carrierTrucks
+                                .filter((truck) => !carriersDrivers.find(driver => driver.truck_id === truck.id))
+                                .map((truck) => {
+                                  console.log("carrierTrucksMap: ", truck);
+                                  return truck;
+                                })
+                                .map((truck) => (
+                                  <SelectItem key={truck.id} value={String(truck.id)}>
+                                    {truck.type} (Payload : {truck.payload})
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                          <Button onClick={() => handleAddDriver(item.id)}>Add Driver</Button>
+                        </TableCell>
                       </TableRow>
 
                       <TableRow>
-                        <TableCell>
-                          <p>Id:</p>
-                        </TableCell>
-                        <TableCell>
-                          <p>Type:</p>
-                        </TableCell>
-                        <TableCell>
-                          <p>Dims: </p>
-                        </TableCell>
-                        <TableCell>
-                          <p>Payload</p>
-                        </TableCell>
-                        <TableCell>
-                          <p> Accessories</p>
+                        <TableCell colSpan={12}>
+                          <CarrierTrucksDetails 
+                          carrierTrucks={carrierTrucks} 
+                          carriersDrivers={carriersDrivers} 
+                          onUpdate={() => console.log("Updated carrier details")} />
+                          <CarrierDriversDetails
+                          carriersDrivers={carriersDrivers} 
+                          carrierTrucks={carrierTrucks} 
+                          />
                         </TableCell>
                       </TableRow>
-                      {carrierTrucks.map((truck) => (
-                        <TableRow key={truck.id}>
-                          <TableCell>{truck.id}</TableCell>
-                          <TableCell>{truck.type}</TableCell>
-                          <TableCell>{truck.dims}</TableCell>
-                          <TableCell>{truck.payload}</TableCell>
-                          <TableCell>{truck.accessories}</TableCell>
-                        </TableRow>
-                      ))}
                     </>
                   )}
                 </>
               )}
             </>
           ))}
-
+          <TableRow></TableRow>
           <TableRow>
             {/* {!isAddNew && ( */}
             <TableCell>

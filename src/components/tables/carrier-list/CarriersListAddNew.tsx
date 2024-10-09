@@ -6,7 +6,6 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 
 const initialCarrierData: CarrierData = {
-  agent_id: 0,
   home_city: "",
   carrier_email: "",
   mc_number: "",
@@ -14,8 +13,6 @@ const initialCarrierData: CarrierData = {
   company_phone: "",
   truck_type_spam: "",
   spam: false,
-  driver_count: 0,
-  truck_count: 0,
 };
 
 type CarriersListAddNewProps = {
@@ -25,13 +22,11 @@ type CarriersListAddNewProps = {
 
 function CarriersListAddNew({ setIsAddNew, user }: CarriersListAddNewProps) {
   const router = useRouter();
-  const [newCarrier, setNewCarrier] = useState<CarrierData>({
-    ...initialCarrierData,
-    agent_id: user && user.id ? Number(user.id) : 0,
-  });
-
+  const [newCarrier, setNewCarrier] = useState<CarrierData>(initialCarrierData);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const componentRef = useRef<HTMLDivElement>(null);
-  console.log('newCarrier',newCarrier, user)
+
   const handleInputChange = (key: keyof CarrierData, value: string | boolean) => {
     setNewCarrier((prevState) => ({
       ...prevState,
@@ -40,6 +35,13 @@ function CarriersListAddNew({ setIsAddNew, user }: CarriersListAddNewProps) {
   };
 
   const handleAddNewCarrier = async () => {
+    if (!user || !user.id) {
+      setError("User information is missing. Please log in again.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
     try {
       const newCarrierUpdate = { ...newCarrier, agent_id: Number(user.id) };
       const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers`, newCarrierUpdate);
@@ -49,58 +51,55 @@ function CarriersListAddNew({ setIsAddNew, user }: CarriersListAddNewProps) {
       router.refresh();
     } catch (error) {
       console.error("Error adding new carrier:", error);
+      setError("Failed to add new carrier. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-   // Scroll the component into view when it's rendered
-   useEffect(() => {
+  useEffect(() => {
     if (componentRef.current) {
       componentRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, []);
 
-
-  if(!user) return null;
+  if (!user) return null;
 
   return (
     <div ref={componentRef}>
-    <Table >
-      <TableCaption>Fill out carriers info</TableCaption>
-      <TableHeader>
+      {error && <div className="text-red-500 mb-4">{error}</div>}
+      <Table>
+        <TableCaption>Fill out carrier's info</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Home City</TableHead>
+            <TableHead>Carrier Email</TableHead>
+            <TableHead>MC Number</TableHead>
+            <TableHead>Company Name</TableHead>
+            <TableHead>Company Phone</TableHead>
+            <TableHead>Truck Type Spam</TableHead>
+            <TableHead>Spam</TableHead>
+          </TableRow>
+        </TableHeader>
         <TableRow>
-          {/* <TableHead>Carrier Number</TableHead> */}
-          <TableHead>Agent Number</TableHead>
-          <TableHead>Home City</TableHead>
-          <TableHead>Carrier Email</TableHead>
-          <TableHead>MC Number</TableHead>
-          <TableHead>Company Name</TableHead>
-          <TableHead>Company Phone</TableHead>
-          <TableHead>Truck Type Spam</TableHead>
-          <TableHead>Spam</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableRow>
-        {Object.entries(newCarrier).map(([key, value]) => (
-          <TableCell key={key}>
-            <input
-              type={typeof value === "boolean" ? "checkbox" : "text"}
-              checked={typeof value === "boolean" ? value : undefined}
-              value={typeof value !== "boolean" ? value : undefined}
-              onChange={(e) => handleInputChange(key as keyof CarrierData, e.target.type === "checkbox" ? e.target.checked : e.target.value)}
-              className="w-full p-1 border rounded"
-            />
-            {key}
+          {Object.entries(newCarrier).map(([key, value]) => (
+            <TableCell key={key}>
+              <input
+                type={typeof value === "boolean" ? "checkbox" : "text"}
+                checked={typeof value === "boolean" ? value : undefined}
+                value={typeof value !== "boolean" ? value : undefined}
+                onChange={(e) => handleInputChange(key as keyof CarrierData, e.target.type === "checkbox" ? e.target.checked : e.target.value)}
+                className="w-full p-1 border rounded"
+              />
+            </TableCell>
+          ))}
+          <TableCell>
+            <Button className="w-full" onClick={handleAddNewCarrier} disabled={isLoading}>
+              {isLoading ? "Saving..." : "Save"}
+            </Button>
           </TableCell>
-        ))}
-
-        <TableCell>
-          <Button className="w-full" onClick={handleAddNewCarrier}>
-            Save
-          </Button>
-        </TableCell>
-      </TableRow>
-
-    </Table>
+        </TableRow>
+      </Table>
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { RateItem } from '@/types';
  
 
 async function fetchRateData(): Promise<RateItem[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}api/rate-list`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}api/rates`, {
     cache: "no-cache",
   });
 
