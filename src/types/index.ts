@@ -1,6 +1,6 @@
 export type CarrierData = {
   id?: number;
-  agent_id?: number;
+  user_id?: number;
   home_city: string;
   carrier_email: string;
   mc_number: string;
@@ -64,3 +64,46 @@ export interface RateItem {
   extra: number;
 }
 
+
+export interface SearchRateType {
+  search_id: number;
+  pu_city: string;
+  destination: string;
+  late_pick_up: string;
+  pu_date_start: string;
+  pu_date_end: string;
+  del_date_start: string;
+  del_date_end: string;
+  dead_head: number;
+  min_miles: number;
+  max_miles: number;
+  rpm: number;
+  min_rate: number;
+  round_to: number;
+  extra: number;
+  // Carrier fields
+  company_name: string;
+  carrier_id: number;
+  home_city: string;
+  carrier_email: string;
+  mc_number: string;
+  company_phone: string;
+  // Agent fields
+  agent_id: number;
+  agent_name: string;
+  agent_email: string;
+  // Truck fields
+  // truck_number: string;
+  truck_id: number;
+  truck_type: string;
+  truck_dims: string;
+  payload: number;
+  accessories: string;
+  // Driver fields
+  driver_id: number;
+  driver_name: string;
+  driver_lastname: string;
+  driver_phone: string;
+  driver_email: string;
+  perks: string;
+}

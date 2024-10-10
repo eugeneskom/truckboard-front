@@ -43,7 +43,7 @@ function AddNewCarrier({ setIsAddNew, user }: AddNewCarrierProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const newCarrierUpdate = { ...newCarrier, agent_id: Number(user.id) };
+      const newCarrierUpdate = { ...newCarrier, user_id: Number(user.id) };
       const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers`, newCarrierUpdate);
       console.log("New carrier added:", response.data);
       setNewCarrier(initialCarrierData);
