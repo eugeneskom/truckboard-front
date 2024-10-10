@@ -37,8 +37,8 @@ function CarriersList({ data }: TableProps) {
     truck_type_spam: "",
     spam: false,
     agent_id: user ? user.id : 0,
-    truck_count: 0,
-    driver_count: 0,
+    // truck_count: 0,
+    // driver_count: 0,
   });
   const [truckData, setTruckData] = useState<TruckData>({
     id: 0,
@@ -99,7 +99,7 @@ function CarriersList({ data }: TableProps) {
   const handleRemoveCarrier = async (id: number | string | undefined) => {
     try {
       const response = await axios.delete(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers/${id}`);
-      console.log("Carrier removed:", response.data);
+      console.log("Carrier Removed: ", response.data);
       router.refresh();
       // Trigger revalidation after successful delete
     } catch (error) {
