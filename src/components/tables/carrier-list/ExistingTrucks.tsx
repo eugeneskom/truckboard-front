@@ -8,13 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import axios from "axios";
 import { DriverData, TruckData } from "@/types";
 
-interface CarrierTrucksDetailsProps {
+interface ExistingTrucksProps {
   carrierTrucks: TruckData[];
   carriersDrivers: DriverData[];
   onUpdate: () => void;
 }
 
-const CarrierTrucksDetails: React.FC<CarrierTrucksDetailsProps> = ({
+const ExistingTrucks: React.FC<ExistingTrucksProps> = ({
   carrierTrucks,
   carriersDrivers,
   onUpdate,
@@ -128,4 +128,4 @@ const CarrierTrucksDetails: React.FC<CarrierTrucksDetailsProps> = ({
   );
 };
 
-export default CarrierTrucksDetails;
+export default ExistingTrucks;
