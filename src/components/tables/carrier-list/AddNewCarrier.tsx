@@ -69,7 +69,7 @@ function AddNewCarrier({ setIsAddNew, user }: AddNewCarrierProps) {
     <div ref={componentRef}>
       {error && <div className="text-red-500 mb-4">{error}</div>}
       <Table>
-        <TableCaption>Fill out carrier's info</TableCaption>
+        <TableCaption>Fill out carrier&apos;s info</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>Home City</TableHead>
