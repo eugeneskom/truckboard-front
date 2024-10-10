@@ -15,12 +15,12 @@ const initialCarrierData: CarrierData = {
   spam: false,
 };
 
-type CarriersListAddNewProps = {
+type AddNewCarrierProps = {
   setIsAddNew: React.Dispatch<React.SetStateAction<boolean>>;
   user: UserData;
 };
 
-function CarriersListAddNew({ setIsAddNew, user }: CarriersListAddNewProps) {
+function AddNewCarrier({ setIsAddNew, user }: AddNewCarrierProps) {
   const router = useRouter();
   const [newCarrier, setNewCarrier] = useState<CarrierData>(initialCarrierData);
   const [isLoading, setIsLoading] = useState(false);
@@ -104,4 +104,4 @@ function CarriersListAddNew({ setIsAddNew, user }: CarriersListAddNewProps) {
   );
 }
 
-export default CarriersListAddNew;
+export default AddNewCarrier;

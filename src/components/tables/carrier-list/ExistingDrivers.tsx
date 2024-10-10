@@ -1,22 +1,17 @@
 import React from "react";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-// import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import axios from "axios";
 import { DriverData, TruckData } from "@/types";
 
-interface CarrierDriversDetailsProps {
-  // carrierId: string | undefined;
+interface ExistingDriversProps {
   carriersDrivers: DriverData[];
   carrierTrucks: TruckData[];
-  // onUpdate: () => void;
 }
 
-const CarrierDriversDetails: React.FC<CarrierDriversDetailsProps> = ({ 
-  // carrierId,
+const ExistingDrivers: React.FC<ExistingDriversProps> = ({ 
    carriersDrivers, 
    carrierTrucks
-  //  onUpdate
    }) => {
   // const [assigningDriver, setAssigningDriver] = useState<string | null>(null);
 
@@ -127,4 +122,4 @@ const CarrierDriversDetails: React.FC<CarrierDriversDetailsProps> = ({
   );
 };
 
-export default CarrierDriversDetails;
+export default ExistingDrivers;

@@ -1,7 +1,7 @@
 "use client";
 // Import necessary React and Next.js types
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import CarriersListAddNew from "./CarriersListAddNew";
+import CarriersListAddNew from "./AddNewCarrier";
 import { CarrierData, DriverData, TruckData } from "@/types";
 import { useState } from "react";
 import { Button } from "../../ui/button";
@@ -12,9 +12,9 @@ import EditBtn from "@/components/buttons/EditBtn";
 import SaveBtn from "@/components/buttons/SaveBtn";
 import UndoBtn from "@/components/buttons/UndoBtn";
 import AddTruck from "@/components/buttons/AddTruck";
-import CarrierTrucksDetails from "./CarrierTrucksDetails";
+import ExistingTrucks from "./ExistingTrucks";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import CarrierDriversDetails from "./CarrierDriversDetails";
+import ExistingDrivers from "./ExistingDrivers";
 
 // Define the props interface that will be passed to your page component
 interface TableProps {
@@ -315,11 +315,11 @@ function CarriersList({ data }: TableProps) {
 
                       <TableRow>
                         <TableCell colSpan={12}>
-                          <CarrierTrucksDetails 
+                          <ExistingTrucks 
                           carrierTrucks={carrierTrucks} 
                           carriersDrivers={carriersDrivers} 
                           onUpdate={() => console.log("Updated carrier details")} />
-                          <CarrierDriversDetails
+                          <ExistingDrivers
                           carriersDrivers={carriersDrivers} 
                           carrierTrucks={carrierTrucks} 
                           />
