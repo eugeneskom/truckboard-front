@@ -12,7 +12,7 @@ const TruckDimsInput: React.FC<TruckDimsInputProps> = ({ value, onChange, classN
 
   useEffect(() => {
     if (value) {
-      const parts = value.split('x').map(v => v.trim());
+      const parts = value.trim().split('x').map(v => v.trim());
       setDimensions([
         parts[0] || '',
         parts[1] || '',

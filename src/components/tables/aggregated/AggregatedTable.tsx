@@ -67,7 +67,7 @@ const columnDefinitions: ColumnDef[] = [
   { key: "agent_email", type: "email", label: "Agent Email" },
   { key: "truck_id", type: "number", label: "Truck ID" },
   { key: "truck_type", type: { type: "truckTypeSelect", options: ["VH", "SB", "DD"] }, label: "Truck Type" },
-  { key: "truck_dims", type: "text", label: "Truck Dimensions" },
+  // { key: "truck_dims", type: "text", label: "Truck Dimensions" },
   { key: "payload", type: "number", label: "Payload" },
   { key: "accessories", type: "text", label: "Accessories" },
   // { key: "driver_id", type: { type: "driverSelect", options: [] }, label: "Driver" },
