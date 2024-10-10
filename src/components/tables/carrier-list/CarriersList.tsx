@@ -36,7 +36,7 @@ function CarriersList({ data }: TableProps) {
     company_phone: "",
     truck_type_spam: "",
     spam: false,
-    agent_id: user ? user.id : 0,
+    user_id: user ? user.id : 0,
     // truck_count: 0,
     // driver_count: 0,
   });

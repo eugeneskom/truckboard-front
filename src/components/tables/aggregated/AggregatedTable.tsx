@@ -8,54 +8,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { debounce } from "lodash";
 import { Calendar } from "@/components/ui/calendar";
 import format from "date-fns/format";
-import { parsePhoneNumber, formatIncompletePhoneNumber, AsYouType } from "libphonenumber-js";
+import { parsePhoneNumber, AsYouType } from "libphonenumber-js";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
-import Error from "next/error";
 import TruckDimsInput from "@/components/chunks/TruckDimsInput";
+import { SearchRateType } from "@/types";
 
-interface SearchRateType {
-  search_id: number;
-  pu_city: string;
-  destination: string;
-  late_pick_up: string;
-  pu_date_start: string;
-  pu_date_end: string;
-  del_date_start: string;
-  del_date_end: string;
-  dead_head: number;
-  min_miles: number;
-  max_miles: number;
-  rpm: number;
-  min_rate: number;
-  round_to: number;
-  extra: number;
-  // Carrier fields
-  company_name: string;
-  carrier_id: number;
-  home_city: string;
-  carrier_email: string;
-  mc_number: string;
-  company_phone: string;
-  // Agent fields
-  agent_id: number;
-  agent_name: string;
-  agent_email: string;
-  // Truck fields
-  // truck_number: string;
-  truck_id: number;
-  truck_type: string;
-  truck_dims: string;
-  payload: number;
-  accessories: string;
-  // Driver fields
-  driver_id: number;
-  driver_name: string;
-  driver_lastname: string;
-  driver_phone: string;
-  driver_email: string;
-  perks: string;
-}
+
 
 //  input types:
 type InputTypes =
@@ -121,7 +80,9 @@ const columnDefinitions: ColumnDef[] = [
 
 interface CustomInputProps {
   columnDef: ColumnDef;
+  // eslint-disable-next-line
   value: any;
+  // eslint-disable-next-line
   onChange: (value: any) => void;
   onFocus: () => void;
   onBlur: () => void;
@@ -129,7 +90,7 @@ interface CustomInputProps {
 }
 
 const MIN_WIDTH_INPUT = "min-w-[150px]"; // Adjust this value as needed
-const SMALL_WIDTH_INPUT = "min-w-[75px]"
+const SMALL_WIDTH_INPUT = "min-w-[75px]";
 
 export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onChange, onFocus, onBlur, className }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -141,6 +102,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       if (phoneNumber) {
         return phoneNumber.format("NATIONAL");
       }
+      // eslint-disable-next-line
     } catch (error) {
       // If parsing fails, fall back to incomplete formatting
     }
@@ -320,6 +282,7 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
   }, [data]);
 
   const debouncedUpdate = useCallback(
+    // eslint-disable-next-line
     debounce(async (rowIndex: number, field: string, value: any) => {
       const row = localData[rowIndex];
       let table: string;
@@ -363,9 +326,10 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
     }, 500),
     [localData, setData]
   );
-
+  // eslint-disable-next-line
   const handleUpdate = (rowIndex: number, field: string, value: any) => {
     const newData = [...localData];
+    // eslint-disable-next-line
     (newData[rowIndex] as any)[field] = value;
     setLocalData(newData);
 
@@ -373,15 +337,17 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
       // Ensure the value is in the correct format
       const dims = value
         .split("x")
-        .map((v) => v.trim())
-        .filter((v) => v !== "");
+        .map((v:string) => v.trim())
+        .filter((v:string) => v !== "");
       if (dims.length === 3) {
+        // eslint-disable-next-line
         (newData[rowIndex] as any)[field] = dims.join("x");
       } else {
         console.error("Invalid truck dimensions:", value);
         return;
       }
     } else {
+      // eslint-disable-next-line
       (newData[rowIndex] as any)[field] = value;
     }
 
@@ -391,6 +357,7 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
         if (phoneNumber && phoneNumber.isValid()) {
           debouncedUpdate(rowIndex, field, phoneNumber.number);
         }
+        // eslint-disable-next-line
       } catch (error: any) {
         console.error("Invalid phone number:", value);
       }

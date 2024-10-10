@@ -1,35 +1,53 @@
+import React, { useState, useEffect } from 'react';
 import { Input } from "../ui/input";
 
-const TruckDimsInput: React.FC<{
+interface TruckDimsInputProps {
   value: string;
   onChange: (value: string) => void;
   className?: string;
-}> = ({ value, onChange, className }) => {
-  const [length, width, height] = value.split("x").map((v) => v.trim());
+}
+
+const TruckDimsInput: React.FC<TruckDimsInputProps> = ({ value, onChange, className }) => {
+  const [dimensions, setDimensions] = useState<string[]>(['', '', '']);
+
+  useEffect(() => {
+    if (value) {
+      const parts = value.split('x').map(v => v.trim());
+      setDimensions([
+        parts[0] || '',
+        parts[1] || '',
+        parts[2] || ''
+      ]);
+    } else {
+      setDimensions(['', '', '']);
+    }
+  }, [value]);
 
   const handleChange = (index: number, newValue: string) => {
-    const values = value.split("x").map((v) => v.trim());
-    values[index] = newValue;
-    onChange(values.join("x"));
+    const newDimensions = [...dimensions];
+    newDimensions[index] = newValue.replace(/[^0-9]/g, '');
+    setDimensions(newDimensions);
+    onChange(newDimensions.filter(Boolean).join('x') || '');
   };
 
   return (
     <div className="flex space-x-1">
-      {["Length", "Width", "Height"].map((label, index) => (
+      {['Length', 'Width', 'Height'].map((label, index) => (
         <Input
           key={label}
           className={`
-          min-w-[70px] 
-          ${className}
-          [appearance:textfield]
-          [&::-webkit-outer-spin-button]:appearance-none
-          [&::-webkit-inner-spin-button]:appearance-none
+            min-w-[70px] 
+            ${className}
+            [appearance:textfield]
+            [&::-webkit-outer-spin-button]:appearance-none
+            [&::-webkit-inner-spin-button]:appearance-none
           `}
-          type="number"
-          value={[length, width, height][index] || ""}
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          value={dimensions[index]}
           onChange={(e) => handleChange(index, e.target.value)}
           placeholder={label}
-          min={0}
         />
       ))}
     </div>

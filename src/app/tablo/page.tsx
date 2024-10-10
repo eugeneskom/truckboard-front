@@ -1,10 +1,10 @@
 "use client";
 
 import AggregatedDataTable from "@/components/tables/aggregated/AggregatedTable";
-import { PostingTypes } from "@/types";
+import { SearchRateType } from "@/types";
 import { useEffect, useState } from "react";
 
-async function handleGetAggregatedData(): Promise<PostingTypes[]> {
+async function handleGetAggregatedData(): Promise<SearchRateType[]> {
   const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}api/aggregated`, {
     cache: "no-cache",
   });
@@ -18,14 +18,14 @@ async function handleGetAggregatedData(): Promise<PostingTypes[]> {
 }
 
  function TabloPage() {
-  const [data, setData] = useState<PostingTypes[]>([]);
+  const [data, setData] = useState<SearchRateType[]>([]);
 
   useEffect(() => {
   // const res: PostingTypes[] = await handleGetAggregatedData(); // Fetch data server-side
   // setData(res)
 
   const handleData = async () => {
-    const res: PostingTypes[] = await handleGetAggregatedData(); // Fetch data server-side
+    const res: SearchRateType[] = await handleGetAggregatedData(); // Fetch data server-side
     setData(res);
   }
 
@@ -35,7 +35,7 @@ async function handleGetAggregatedData(): Promise<PostingTypes[]> {
 
   return (
     <div className="px-5">
-      <p>TabloPage</p>
+      <p>TabloPage #1</p>
       <AggregatedDataTable data={data} setData={setData}/>
  
     </div>

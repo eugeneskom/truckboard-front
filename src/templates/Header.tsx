@@ -42,6 +42,12 @@ function Header() {
               </Link>
             </NavigationMenuItem>
 
+            <NavigationMenuItem>
+              <Link href="/tablo" legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>Tablo</NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+
           </NavigationMenuList>
         </NavigationMenu>
     </header>
