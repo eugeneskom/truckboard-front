@@ -330,8 +330,7 @@ function CarriersList({ data }: TableProps) {
                 </>
               )}
             </>
-          ))}
-          <TableRow></TableRow>
+          ))} 
           <TableRow>
             {/* {!isAddNew && ( */}
             <TableCell>
