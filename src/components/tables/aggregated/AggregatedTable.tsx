@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import TruckDimsInput from "@/components/chunks/TruckDimsInput";
 import { SearchRateType } from "@/types";
+import { useMemo } from "react";
 
 
 
@@ -281,90 +282,153 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
     setLocalData(data);
   }, [data]);
 
-  const debouncedUpdate = useCallback(
-    // eslint-disable-next-line
-    debounce(async (rowIndex: number, field: string, value: any) => {
-      const row = localData[rowIndex];
-      let table: string;
-      let id: number | undefined;
+  const updateData = useCallback(async (table: string, id: number, field: string, value: any) => {
+    try {
+      await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/update-data`, { table, id, field, value });
+      setData(prevData => prevData.map(item => 
+        item.search_id === id ? { ...item, [field]: value } : item
+      ));
+    } catch (error) {
+      console.error("Error updating data:", error);
+    }
+  }, [setData]);
 
-      if (["pu_city", "destination", "late_pick_up", "pu_date_start", "pu_date_end", "del_date_start", "del_date_end", "carrier_id", "truck_id", "driver_id"].includes(field)) {
-        table = "searches";
-        id = row.search_id;
-        value = value !== "" ? value.split("T")[0] : null;
-      } else if (["dead_head", "min_miles", "max_miles", "rpm", "min_rate", "round_to", "extra"].includes(field)) {
-        table = "rates";
-        id = row.search_id; // Assuming rates have their own ID
-      } else if (["home_city", "carrier_email", "mc_number", "company_name", "company_phone"].includes(field)) {
-        table = "carriers";
-        id = row.carrier_id;
-      } else if (["agent_id", "agent_name", "agent_email"].includes(field)) {
-        table = "agents";
-        id = row.agent_id;
-      } else if (["truck_number", "truck_type", "truck_dims", "payload", "accessories"].includes(field)) {
-        table = "trucks";
-        id = row.truck_id;
-      } else if (["driver_name", "driver_lastname", "driver_phone", "driver_email", "perks"].includes(field)) {
-        table = "drivers";
-        id = row.driver_id;
-      } else {
-        console.error("Unknown field:", field);
-        return;
-      }
-
-      if (id === undefined) {
-        console.error("Unable to determine ID for table:", table);
-        return;
-      }
-
-      try {
-        await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/update-data`, { table, id, field, value });
-        setData(localData);
-      } catch (error) {
-        console.error("Error updating data:", error);
-      }
-    }, 500),
-    [localData, setData]
+  const debouncedUpdate = useMemo(
+    () => debounce(
+      (table: string, id: number, field: string, value: any) => updateData(table, id, field, value),
+      500
+    ),
+    [updateData]
   );
-  // eslint-disable-next-line
-  const handleUpdate = (rowIndex: number, field: string, value: any) => {
-    const newData = [...localData];
-    // eslint-disable-next-line
-    (newData[rowIndex] as any)[field] = value;
-    setLocalData(newData);
 
-    if (field === "truck_dims") {
-      // Ensure the value is in the correct format
-      const dims = value
-        .split("x")
-        .map((v:string) => v.trim())
-        .filter((v:string) => v !== "");
-      if (dims.length === 3) {
-        // eslint-disable-next-line
-        (newData[rowIndex] as any)[field] = dims.join("x");
-      } else {
-        console.error("Invalid truck dimensions:", value);
-        return;
-      }
+  const handleUpdate = useCallback((rowIndex: number, field: string, value: any) => {
+    const row = localData[rowIndex];
+    let table: string;
+    let id: number | undefined;
+
+    if (["pu_city", "destination", "late_pick_up", "pu_date_start", "pu_date_end", "del_date_start", "del_date_end", "carrier_id", "truck_id", "driver_id"].includes(field)) {
+      table = "searches";
+      id = row.search_id;
+      value = value !== "" ? value.split("T")[0] : null;
+    } else if (["dead_head", "min_miles", "max_miles", "rpm", "min_rate", "round_to", "extra"].includes(field)) {
+      table = "rates";
+      id = row.search_id;
+    } else if (["home_city", "carrier_email", "mc_number", "company_name", "company_phone"].includes(field)) {
+      table = "carriers";
+      id = row.carrier_id;
+    } else if (["agent_id", "agent_name", "agent_email"].includes(field)) {
+      table = "agents";
+      id = row.agent_id;
+    } else if (["truck_number", "truck_type", "truck_dims", "payload", "accessories"].includes(field)) {
+      table = "trucks";
+      id = row.truck_id;
+    } else if (["driver_name", "driver_lastname", "driver_phone", "driver_email", "perks"].includes(field)) {
+      table = "drivers";
+      id = row.driver_id;
     } else {
-      // eslint-disable-next-line
-      (newData[rowIndex] as any)[field] = value;
+      console.error("Unknown field:", field);
+      return;
     }
 
-    if (field === "company_phone" || field === "driver_phone") {
-      try {
-        const phoneNumber = parsePhoneNumber(value, "US");
-        if (phoneNumber && phoneNumber.isValid()) {
-          debouncedUpdate(rowIndex, field, phoneNumber.number);
-        }
-        // eslint-disable-next-line
-      } catch (error: any) {
-        console.error("Invalid phone number:", value);
-      }
-    } else {
-      debouncedUpdate(rowIndex, field, value);
+    if (id === undefined) {
+      console.error("Unable to determine ID for table:", table);
+      return;
     }
-  };
+
+    setLocalData(prevData => 
+      prevData.map((item, index) => 
+        index === rowIndex ? { ...item, [field]: value } : item
+      )
+    );
+
+    debouncedUpdate(table, id, field, value);
+  }, [localData, debouncedUpdate]);
+
+
+  // const debouncedUpdate = useCallback(
+  //   // eslint-disable-next-line
+  //   debounce(async (rowIndex: number, field: string, value: any) => {
+  //     const row = localData[rowIndex];
+  //     let table: string;
+  //     let id: number | undefined;
+
+  //     if (["pu_city", "destination", "late_pick_up", "pu_date_start", "pu_date_end", "del_date_start", "del_date_end", "carrier_id", "truck_id", "driver_id"].includes(field)) {
+  //       table = "searches";
+  //       id = row.search_id;
+  //       value = value !== "" ? value.split("T")[0] : null;
+  //     } else if (["dead_head", "min_miles", "max_miles", "rpm", "min_rate", "round_to", "extra"].includes(field)) {
+  //       table = "rates";
+  //       id = row.search_id; // Assuming rates have their own ID
+  //     } else if (["home_city", "carrier_email", "mc_number", "company_name", "company_phone"].includes(field)) {
+  //       table = "carriers";
+  //       id = row.carrier_id;
+  //     } else if (["agent_id", "agent_name", "agent_email"].includes(field)) {
+  //       table = "agents";
+  //       id = row.agent_id;
+  //     } else if (["truck_number", "truck_type", "truck_dims", "payload", "accessories"].includes(field)) {
+  //       table = "trucks";
+  //       id = row.truck_id;
+  //     } else if (["driver_name", "driver_lastname", "driver_phone", "driver_email", "perks"].includes(field)) {
+  //       table = "drivers";
+  //       id = row.driver_id;
+  //     } else {
+  //       console.error("Unknown field:", field);
+  //       return;
+  //     }
+
+  //     if (id === undefined) {
+  //       console.error("Unable to determine ID for table:", table);
+  //       return;
+  //     }
+
+  //     try {
+  //       await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/update-data`, { table, id, field, value });
+  //       setData(localData);
+  //     } catch (error) {
+  //       console.error("Error updating data:", error);
+  //     }
+  //   }, 500),
+  //   [localData, setData]
+  // );
+  // // eslint-disable-next-line
+  // const handleUpdate = (rowIndex: number, field: string, value: any) => {
+  //   const newData = [...localData];
+  //   // eslint-disable-next-line
+  //   (newData[rowIndex] as any)[field] = value;
+  //   setLocalData(newData);
+
+  //   if (field === "truck_dims") {
+  //     // Ensure the value is in the correct format
+  //     const dims = value
+  //       .split("x")
+  //       .map((v:string) => v.trim())
+  //       .filter((v:string) => v !== "");
+  //     if (dims.length === 3) {
+  //       // eslint-disable-next-line
+  //       (newData[rowIndex] as any)[field] = dims.join("x");
+  //     } else {
+  //       console.error("Invalid truck dimensions:", value);
+  //       return;
+  //     }
+  //   } else {
+  //     // eslint-disable-next-line
+  //     (newData[rowIndex] as any)[field] = value;
+  //   }
+
+  //   if (field === "company_phone" || field === "driver_phone") {
+  //     try {
+  //       const phoneNumber = parsePhoneNumber(value, "US");
+  //       if (phoneNumber && phoneNumber.isValid()) {
+  //         debouncedUpdate(rowIndex, field, phoneNumber.number);
+  //       }
+  //       // eslint-disable-next-line
+  //     } catch (error: any) {
+  //       console.error("Invalid phone number:", value);
+  //     }
+  //   } else {
+  //     debouncedUpdate(rowIndex, field, value);
+  //   }
+  // };
 
   const handleDelete = async (searchNumber: number) => {
     try {
