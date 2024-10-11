@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useWebSocket } from './WebSocketProvider';
 
 const WebSocketTest: React.FC = () => {
+  // eslint-disable-next-line
   const { sendMessage, lastMessage } = useWebSocket();
   const [message, setMessage] = useState('');
 
