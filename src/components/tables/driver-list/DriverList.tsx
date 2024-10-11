@@ -4,7 +4,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import DriverListAddNew from "./DriverListAddNew";
+import AddNewDriver from "./AddNewDriver";
 import { DriverData } from "@/types";
 import EditBtn from "@/components/buttons/EditBtn";
 import SaveBtn from "@/components/buttons/SaveBtn";
@@ -134,7 +134,7 @@ function DriverList({ data }: TableProps) {
       <Button className={`$mt-4 fixed bottom-2 right-2 ${isAddNew ? "bg-red-500 hover:bg-red-700" : "bg-blue-400 hover:bg-blue-600"}`} onClick={() => setIsAddNew(!isAddNew)}>
         {isAddNew ? "x" : "+"}
       </Button>
-      {isAddNew && <DriverListAddNew setIsAddNew={setIsAddNew} />}
+      {isAddNew && <AddNewDriver setIsAddNew={setIsAddNew} />}
     </>
   );
 }
