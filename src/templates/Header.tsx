@@ -4,8 +4,8 @@ import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuL
 function Header() {
   return (
     <header className="w-full ">
-        <NavigationMenu className="list-none ">
-          <NavigationMenuList>
+        <NavigationMenu className="list-none w-[100%] w-full">
+          <NavigationMenuList className="w-[100%] w-full">
             <NavigationMenuItem>
               <Link href="/" legacyBehavior passHref>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>Home</NavigationMenuLink>
@@ -45,6 +45,11 @@ function Header() {
             <NavigationMenuItem>
               <Link href="/tablo" legacyBehavior passHref>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>Tablo</NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem className="ml-auto">
+              <Link href="/login" legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>Login</NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
 
