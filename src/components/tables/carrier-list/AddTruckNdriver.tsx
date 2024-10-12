@@ -1,47 +1,94 @@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TableCell, TableRow } from "@/components/ui/table";
-import React from "react";
+import React, { useState } from "react";
 import ExistingTrucks from "./ExistingTrucks";
 import ExistingDrivers from "./ExistingDrivers";
 import { CarrierData, DriverData, TruckData } from "@/types";
+import { useRouter } from "next/navigation";
+
+import axios from "axios";
 
 
-// {isAddTruck === item.id && (
-//   <>
-//     <AddDriver 
-//     addTruck={handleAddTruck} 
-//     addDriverF={handleAddDriver} 
-//     item={item} 
-//     setTruckData={setTruckData} 
-//     truckData={truckData} 
-//     setDriverData={setDriverData} 
-//     driverData={driverData} 
-//     carriersDrivers={carriersDrivers} 
-//     carrierTrucks={carrierTrucks}/>
-//   </>
-// )}
 
-interface AddDriverProps {
-  addTruck: (id: number) => void;
-  addDriverF: (id: number) => void;
+interface AddTruckNdriverProps {
+  setIsAddTruck: (id: number) => void;
   item: CarrierData;
-  truckData: TruckData;
-  setTruckData: (data: TruckData) => void;
-  driverData: {
-    name: string;
-    lastname: string;
-    phone: string;
-    email: string;
-    perks: string;
-    truck_id: number;
-  };
-  setDriverData: (data: DriverData) => void;
   carrierTrucks: TruckData[];
   carriersDrivers: DriverData[];
 }
 
-function AddDriver({ addTruck, addDriverF, item, setTruckData, truckData, setDriverData, driverData, carriersDrivers, carrierTrucks }: AddDriverProps) {
+function AddTruckNdriver({ setIsAddTruck, item, carriersDrivers, carrierTrucks }: AddTruckNdriverProps) {
+  
+  const router = useRouter();
+
+  const [truckData, setTruckData] = useState<TruckData>({
+    id: 0,
+    carrier_id: 0,
+    type: "",
+    dims: "",
+    payload: 0,
+    accessories: "",
+  });
+  const [driverData, setDriverData] = useState<DriverData>({
+    id: 0,
+    carrier_id: 0,
+    name: "",
+    lastname: "",
+    phone: "",
+    email: "",
+    perks: "",
+    truck_id: 0,
+  });
+
+  const handleAddTruckNdriver = async (
+    carrierId: string | number | undefined
+  ) => {
+    if (!carrierId) return console.log("handleAddTruckNdriver no carrierId : ", carrierId);
+    try {
+      const params = { ...driverData, carrier_id: carrierId }; // for now set initial truck_id to 0 so it does not belong to any truck
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/drivers`, params);
+      console.log("Driver added:", response.data, truckData);
+      setIsAddTruck(0);
+      setTruckData({
+        id: 0,
+        carrier_id: 0,
+        type: "",
+        dims: "",
+        payload: 0,
+        accessories: "",
+      });
+
+      router.refresh();
+    } catch (error) {
+      console.error("Add driver error:", error);
+    }
+  };
+
+  const handleAddTruck = async (carrierId: string | number | undefined) => {
+    if (!carrierId) return console.log("handleAddTruck no carrierId : ", carrierId);
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/add/trucks`, {
+        ...truckData,
+        carrier_id: carrierId,
+      });
+      console.log("Truck added:", response.data, truckData);
+      setIsAddTruck(0);
+      setTruckData({
+        id: 0,
+        carrier_id: 0,
+        type: "",
+        dims: "",
+        payload: 0,
+        accessories: "",
+      });
+
+      router.refresh();
+    } catch (error) {
+      console.error("Add truck error:", error);
+    }
+  };
+  
   return (
     <>
       <TableRow>
@@ -50,7 +97,7 @@ function AddDriver({ addTruck, addDriverF, item, setTruckData, truckData, setDri
             onSubmit={(e) => {
               e.preventDefault();
               if (item.id !== undefined) {
-                addTruck(item.id);
+                handleAddTruck(item.id);
               }
             }}
           >
@@ -109,7 +156,7 @@ function AddDriver({ addTruck, addDriverF, item, setTruckData, truckData, setDri
           </Select>
           <Button
             onClick={() => {
-                addDriverF(item.id);
+              handleAddTruckNdriver(item.id);
             }}
           >
             Add Driver
@@ -127,4 +174,4 @@ function AddDriver({ addTruck, addDriverF, item, setTruckData, truckData, setDri
   );
 }
 
-export default AddDriver;
+export default AddTruckNdriver;
