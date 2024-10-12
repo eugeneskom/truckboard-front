@@ -9,8 +9,9 @@ import { useRouter } from "next/navigation";
 
 import axios from "axios";
 import { Input } from "@/components/ui/input";
+import TruckDimsInput from "@/components/chunks/TruckDimsInput";
 
-
+type TruckType = "" | "VH" | "SB";
 
 // Function to strip non-digits and limit to 10 digits
 const stripAndLimitPhoneNumber = (input: string): string => {
@@ -29,7 +30,7 @@ const stripAndLimitPhoneNumber = (input: string): string => {
 // Function to format phone number for display
 const formatPhoneNumberForDisplay = (input: string | number | undefined | null): string => {
   // Convert input to string and remove non-digit characters
-  const digits = String(input || '').replace(/\D/g, '');
+  const digits = String(input || "").replace(/\D/g, "");
 
   if (digits.length === 0) return "";
   if (digits.length <= 3) return `(${digits}`;
@@ -45,7 +46,6 @@ interface AddTruckNdriverProps {
 }
 
 function AddTruckNdriver({ setIsAddTruck, item, carriersDrivers, carrierTrucks }: AddTruckNdriverProps) {
-  
   const router = useRouter();
 
   const [truckData, setTruckData] = useState<TruckData>({
@@ -67,20 +67,16 @@ function AddTruckNdriver({ setIsAddTruck, item, carriersDrivers, carrierTrucks }
     truck_id: 0,
   });
 
-  const [displayValue, setDisplayValue] = useState(formatPhoneNumberForDisplay(value || ""));
+  const [displayValue, setDisplayValue] = useState(formatPhoneNumberForDisplay(driverData.phone || ""));
 
   const handlePhoneChange = (input: string) => {
     const digits = stripAndLimitPhoneNumber(input);
     const formattedNumber = formatPhoneNumberForDisplay(digits);
     setDisplayValue(formattedNumber);
-    onChange(digits); // Store only digits in the state
+    // onChange(digits); // Store only digits in the state
   };
 
-
-
-  const handleAddTruckNdriver = async (
-    carrierId: string | number | undefined
-  ) => {
+  const handleAddTruckNdriver = async (carrierId: string | number | undefined) => {
     if (!carrierId) return console.log("handleAddTruckNdriver no carrierId : ", carrierId);
     try {
       const params = { ...driverData, carrier_id: carrierId }; // for now set initial truck_id to 0 so it does not belong to any truck
@@ -125,11 +121,11 @@ function AddTruckNdriver({ setIsAddTruck, item, carriersDrivers, carrierTrucks }
       console.error("Add truck error:", error);
     }
   };
-  
+
   return (
     <>
       <TableRow>
-        <TableCell colSpan={6}>
+        <TableCell colSpan={3}>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -137,59 +133,32 @@ function AddTruckNdriver({ setIsAddTruck, item, carriersDrivers, carrierTrucks }
                 handleAddTruck(item.id);
               }
             }}
+            className="flex flex-col items-center gap-3"
           >
-            <label>
-              Truck Type:
-              {/* <input type="text" placeholder="Type" value={truckData.type} onChange={(e) => setTruckData({ ...truckData, type: e.target.value })} /> */}
-              <select onChange={(e) => setTruckData({ ...truckData, type: e.target.value as "" | "VH" | "SB" })}>
-                <option value="VH">VH</option>
-                <option value="SB">SB</option>
-              </select>
-            </label>
-            <br />
-            <label>
-              {" "}
-              Dims:
-              <input type="text" placeholder="Dimensions" value={truckData.dims} onChange={(e) => setTruckData({ ...truckData, dims: e.target.value })} />
-            </label>
-            <br />
-            <label>
-              Payload:
-              <input type="number" placeholder="Payload" value={truckData.payload} onChange={(e) => setTruckData({ ...truckData, payload: parseInt(e.target.value) })} />
-            </label>
-            <br />
-            <label>
-              Accessories:
-              <input type="text" placeholder="Accessories" value={truckData.accessories} onChange={(e) => setTruckData({ ...truckData, accessories: e.target.value })} />
-            </label>
-
+            <h2 className="text-center mb-3">Add Truck information</h2>
+            <Select onValueChange={(value: TruckType) => setTruckData((prevData) => ({ ...prevData, type: value }))} value={truckData.type}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select truck type..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="VH">VH</SelectItem>
+                <SelectItem value="SB">SB</SelectItem>
+              </SelectContent>
+            </Select>
+              <TruckDimsInput value={truckData.dims} onChange={(value) => setTruckData({ ...truckData, dims: value })} />
+              {/* <span>Payload:</span> */}
+              <Input placeholder="Payload" type="number" value={truckData.payload ?? 0} onChange={(e) => setTruckData({ ...truckData, payload: parseInt(e.target.value) })} />
+            <Input placeholder="Accessories" type="text" value={truckData.accessories ?? ""} onChange={(e) => setTruckData({ ...truckData, accessories: e.target.value })} />
             <br />
             <Button type="submit">Add Truck</Button>
           </form>
         </TableCell>
-        <TableCell colSpan={6}>
-          <Input placeholder="Driver Name" type="text" value={driverData.name ?? ""} onChange={(e) => setDriverData({ ...driverData, name: e.target.value })}  />
-          <Input placeholder="Last Name" type="text" value={driverData.lastname ?? ""} onChange={(e) => setDriverData({ ...driverData, lastname: e.target.value })}  />
-          <Input
-            type="tel"
-            value={displayValue}
-            onChange={(e) => handlePhoneChange(e.target.value)}
-            onFocus={onFocus}
-            className={className}
-            onBlur={(e) => {
-              const phoneNumber = parsePhoneNumber(e.target.value, "US");
-              if (phoneNumber) {
-                onChange(phoneNumber.format("NATIONAL"));
-              } else {
-                onChange(null);
-              }
-              onBlur?.();
-            }}
-            placeholder="(123) 456-7890"
-          />
-          <input type="text" placeholder="Phone Number" value={driverData.phone} onChange={(e) => setDriverData({ ...driverData, phone: e.target.value })} />
-          <Input placeholder="Email" type="email" value={driverData.email ?? ""} onChange={(e) => setDriverData({ ...driverData, email: e.target.value })}  />
-          <Input placeholder="Perks" type="text" value={driverData.perks ?? ""} onChange={(e) => setDriverData({ ...driverData, perks: e.target.value })}  />
+        <TableCell colSpan={3}>
+          <Input placeholder="Driver Name" type="text" value={driverData.name ?? ""} onChange={(e) => setDriverData({ ...driverData, name: e.target.value })} />
+          <Input placeholder="Last Name" type="text" value={driverData.lastname ?? ""} onChange={(e) => setDriverData({ ...driverData, lastname: e.target.value })} />
+          <Input type="tel" value={displayValue} onChange={(e) => handlePhoneChange(e.target.value)} placeholder="(123) 456-7890" />
+          <Input placeholder="Email" type="email" value={driverData.email ?? ""} onChange={(e) => setDriverData({ ...driverData, email: e.target.value })} />
+          <Input placeholder="Perks" type="text" value={driverData.perks ?? ""} onChange={(e) => setDriverData({ ...driverData, perks: e.target.value })} />
           <Select onValueChange={(truckId) => setDriverData({ ...driverData, truck_id: Number(truckId) })}>
             <SelectTrigger>
               <SelectValue placeholder="Select a truck" />
