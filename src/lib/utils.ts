@@ -25,9 +25,10 @@ export function setToken(token: string) {
 export function removeToken() {
   Cookies.remove('token');
 }
-
+// eslint-disable-next-line
 export function withAuth(gssp: any) {
   return async (context: GetServerSidePropsContext) => {
+    // eslint-disable-next-line
     const { req, res } = context;
     const token = req.cookies.token;
 
@@ -43,3 +44,18 @@ export function withAuth(gssp: any) {
     return await gssp(context);
   };
 }
+
+export  const allAccessories = [
+  "E-track",
+  "Liftgate",
+  "Straps",
+  "Blankets",
+  "Ramps",
+  "Pallet Jack",
+  "Load Bars",
+  "Dolly",
+  "Forklift",
+  "Pallet",
+  "Shrink Wrap",
+  "Moving Blankets",
+];

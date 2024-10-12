@@ -1,7 +1,7 @@
 "use client";
 // Import necessary React and Next.js types
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import CarriersListAddNew from "./AddNewCarrier";
+import AddCarrier from "./AddCarrier";
 import { CarrierData, ColumnDef, DriverData, TruckData, UserData } from "@/types";
 import { useCallback, useEffect, 
   // useMemo, 
@@ -20,12 +20,13 @@ import ExistingTrucks from "./ExistingTrucks";
 // import AddTruckNdriver from "./AddTruckNdriver";
 import AddTruckNdriver from "./AddTruckNdriver";
 import { CustomInput } from "@/components/chunks/CustomInput";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 // import { debounce } from "lodash";
 
 export const columnDefinitions: ColumnDef[] = [
   { key: "home_city", type: "text", label: "Home City" },
   { key: "carrier_email", type: "email", label: "Carrier Email" },
-  { key: "mc_number", type: "text", label: "MC Number" },
+  { key: "mc_number", type: "number", label: "MC Number" },
   { key: "company_name", type: "text", label: "Company Name" },
   { key: "company_phone", type: "phone", label: "Company Phone" },
   { key: "truck_type_spam", type: { type: "truckTypeSelect", options: ["VH", "SB"] }, label: "Truck Type" },
@@ -48,6 +49,24 @@ function CarriersList({ data }: TableProps) {
   const [localData, setLocalData] = useState<CarrierData[]>([]);
   const [updatedColumnDefinitions] = useState(columnDefinitions);
   const [editingCell, setEditingCell] = useState<{ rowIndex: number; field: string } | null>(null);
+  const [filterOption, setFilterOption] = useState<string>("all");
+
+  // Function to filter carriers based on the selected option
+  const filterCarriers = () => {
+    if (filterOption === "mine" && user?.id) {
+      setLocalData(data.filter((carrier) => carrier.user_id === user.id));
+    } else {
+      setLocalData(data); // Show all carriers if "All" is selected
+    }
+  };
+
+  // Trigger the filtering function when filterOption changes
+  useEffect(() => {
+    filterCarriers();
+  }, [filterOption, data, user]);
+  
+
+
 
   useEffect(() => {
     const storedUser = window.localStorage.getItem("user");
@@ -61,6 +80,8 @@ function CarriersList({ data }: TableProps) {
       setLocalData(data);
     }
   }, [data]);
+
+  console.log("localData: ", localData);
 
   const handleRemoveCarrier = async (id: number | string | undefined) => {
     try {
@@ -133,6 +154,15 @@ function CarriersList({ data }: TableProps) {
 
   return (
     <>
+      <Select onValueChange={(value) => setFilterOption(value)} defaultValue="all">
+        <SelectTrigger>
+          <SelectValue placeholder="Filter carriers" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All</SelectItem>
+          <SelectItem value="mine">Mine</SelectItem>
+        </SelectContent>
+      </Select>
       <Table className="mb-20">
         <TableCaption>A list of carriers.</TableCaption>
         <TableHeader>
@@ -140,7 +170,7 @@ function CarriersList({ data }: TableProps) {
             {updatedColumnDefinitions.map((columnDef) => (
               <TableHead key={columnDef.key}>{columnDef.label}</TableHead>
             ))}
-            <TableHead colSpan={2} className="text-center">
+            <TableHead colSpan={1} className="text-center">
               Actions
             </TableHead>
           </TableRow>
@@ -213,7 +243,7 @@ function CarriersList({ data }: TableProps) {
           </TableRow>
         </TableBody>
       </Table>
-      {isAddNew && <CarriersListAddNew setIsAddNew={setIsAddNew} user={user} updatedColumnDefinitions={updatedColumnDefinitions}/>}
+      {isAddNew && <AddCarrier setIsAddNew={setIsAddNew} user={user} updatedColumnDefinitions={updatedColumnDefinitions}/>}
     </>
   );
 }
