@@ -7,16 +7,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import TruckListAddNew from "./TruckListAddNew";
-import { TruckData } from "@/types";
+import {  TruckData } from "@/types";
 import { splitDimensions } from "@/lib/utils";
 import EditBtn from "@/components/buttons/EditBtn";
 import SaveBtn from "@/components/buttons/SaveBtn";
 import RemoveBtn from "@/components/buttons/RemoveBtn";
 import UndoBtn from "@/components/buttons/UndoBtn";
-
+import { allAccessories } from "@/lib/utils";
 interface TableProps {
   data: TruckData[];
 }
+
 
 function TruckList({ data }: TableProps) {
   const router = useRouter();
@@ -24,55 +25,37 @@ function TruckList({ data }: TableProps) {
   const [editingData, setEditingData] = useState<TruckData | null>(null);
   const [isAddNew, setIsAddNew] = useState<boolean>(false);
 
-  const allAccessories = [
-    "E-track",
-    "Liftgate",
-    "Straps",
-    "Blankets",
-    "Ramps",
-    "Pallet Jack",
-    "Load Bars",
-    "Dolly",
-    "Forklift",
-    "Pallet",
-    "Shrink Wrap",
-    "Moving Blankets",
-  ];
-
   const setEditingRowHandler = (index: number) => {
     setEditingRow(index);
     setEditingData(data[index]);
   };
 
-
-  
-
   const handleEditingData = (key: keyof TruckData, value: string | number | string[]) => {
     if (editingData) {
       setEditingData((prevState) => ({
         ...prevState!,
-        [key]: key === "accessories" 
-          ? (Array.isArray(value) ? value : parseAccessories(value as string))
-          : key === "type" 
-          ? (value as "VH" | "SB") 
-          : key === "id" || key === "carrier_id" 
-          // || key === "driver_number" 
-          || key === "payload" 
-          ? Number(value) 
-          : value,
+        [key]:
+          key === "accessories"
+            ? Array.isArray(value)
+              ? value
+              : parseAccessories(value as string)
+            : key === "type"
+            ? (value as "VH" | "SB")
+            : key === "id" ||
+              key === "carrier_id" ||
+              // || key === "driver_number"
+              key === "payload"
+            ? Number(value)
+            : value,
       }));
     }
   };
 
-
-  
   const handleUpdateTruck = async (id: number) => {
     try {
       const dataToUpdate = {
         ...editingData,
-        accessories: Array.isArray(editingData?.accessories) 
-          ? editingData.accessories.join(', ')
-          : editingData?.accessories
+        accessories: Array.isArray(editingData?.accessories) ? editingData.accessories.join(", ") : editingData?.accessories,
       };
       const response = await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/trucks/${id}`, dataToUpdate);
       console.log("updatedTruckResp", response.data);
@@ -93,14 +76,17 @@ function TruckList({ data }: TableProps) {
     }
   };
 
-
   const parseAccessories = (accessories: string | string[]): string[] => {
     if (Array.isArray(accessories)) {
       return accessories;
     }
-    if (typeof accessories === 'string') {
+    if (typeof accessories === "string") {
       // Remove any surrounding quotes and then split
-      return accessories.replace(/^"|"$/g, '').split(',').map(item => item.trim()).filter(Boolean);
+      return accessories
+        .replace(/^"|"$/g, "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
     }
     return [];
   };
@@ -115,9 +101,7 @@ function TruckList({ data }: TableProps) {
               checked={parsedAccessories.includes(accessory)}
               onCheckedChange={(checked) => {
                 if (isEditing && onChange) {
-                  const newAccessories = checked 
-                    ? [...parsedAccessories, accessory] 
-                    : parsedAccessories.filter((a) => a !== accessory);
+                  const newAccessories = checked ? [...parsedAccessories, accessory] : parsedAccessories.filter((a) => a !== accessory);
                   onChange(newAccessories);
                 }
               }}
@@ -129,7 +113,7 @@ function TruckList({ data }: TableProps) {
       </div>
     );
   };
-  
+
   return (
     <>
       <Table>
@@ -155,13 +139,12 @@ function TruckList({ data }: TableProps) {
               {editingRow === index ? (
                 <>
                   <TableCell>
-                    <input className="w-full p-1 border rounded" type="number" value={editingData?.id} onChange={(e) => handleEditingData("id", e.target.value)} />
+                    <input className="w-full p-1 border rounded" type="number" readOnly value={editingData?.id} onChange={(e) => handleEditingData("id", e.target.value)} />
                   </TableCell>
                   <TableCell>
-                    <input className="w-full p-1 border rounded" type="number" value={editingData?.carrier_id} onChange={(e) => handleEditingData("carrier_id", e.target.value)} />
+                    <input className="w-full p-1 border rounded" type="number" readOnly value={editingData?.carrier_id} onChange={(e) => handleEditingData("carrier_id", e.target.value)} />
                   </TableCell>
                   <TableCell>
-                    
                     <Select value={editingData?.type} onValueChange={(value) => handleEditingData("type", value as "VH" | "SB")}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select truck type" />
@@ -172,7 +155,7 @@ function TruckList({ data }: TableProps) {
                       </SelectContent>
                     </Select>
                   </TableCell>
-                 
+
                   <TableCell>
                     <div className="flex space-x-1">
                       <input

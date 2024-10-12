@@ -8,8 +8,34 @@ import { CarrierData, DriverData, TruckData } from "@/types";
 import { useRouter } from "next/navigation";
 
 import axios from "axios";
+import { Input } from "@/components/ui/input";
 
 
+
+// Function to strip non-digits and limit to 10 digits
+const stripAndLimitPhoneNumber = (input: string): string => {
+  // Remove all non-digit characters
+  let digits = input.replace(/\D/g, "");
+
+  // Remove +1 prefix if present
+  if (digits.length === 11 && digits.startsWith("1")) {
+    digits = digits.slice(1);
+  }
+
+  // Limit to 10 digits
+  return digits.slice(0, 10);
+};
+
+// Function to format phone number for display
+const formatPhoneNumberForDisplay = (input: string | number | undefined | null): string => {
+  // Convert input to string and remove non-digit characters
+  const digits = String(input || '').replace(/\D/g, '');
+
+  if (digits.length === 0) return "";
+  if (digits.length <= 3) return `(${digits}`;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
 
 interface AddTruckNdriverProps {
   setIsAddTruck: (id: number) => void;
@@ -40,6 +66,17 @@ function AddTruckNdriver({ setIsAddTruck, item, carriersDrivers, carrierTrucks }
     perks: "",
     truck_id: 0,
   });
+
+  const [displayValue, setDisplayValue] = useState(formatPhoneNumberForDisplay(value || ""));
+
+  const handlePhoneChange = (input: string) => {
+    const digits = stripAndLimitPhoneNumber(input);
+    const formattedNumber = formatPhoneNumberForDisplay(digits);
+    setDisplayValue(formattedNumber);
+    onChange(digits); // Store only digits in the state
+  };
+
+
 
   const handleAddTruckNdriver = async (
     carrierId: string | number | undefined
@@ -131,11 +168,28 @@ function AddTruckNdriver({ setIsAddTruck, item, carriersDrivers, carrierTrucks }
           </form>
         </TableCell>
         <TableCell colSpan={6}>
-          <input type="text" placeholder="Driver Name" value={driverData.name} onChange={(e) => setDriverData({ ...driverData, name: e.target.value })} />
-          <input type="text" placeholder="Last Name" value={driverData.lastname} onChange={(e) => setDriverData({ ...driverData, lastname: e.target.value })} />
+          <Input placeholder="Driver Name" type="text" value={driverData.name ?? ""} onChange={(e) => setDriverData({ ...driverData, name: e.target.value })}  />
+          <Input placeholder="Last Name" type="text" value={driverData.lastname ?? ""} onChange={(e) => setDriverData({ ...driverData, lastname: e.target.value })}  />
+          <Input
+            type="tel"
+            value={displayValue}
+            onChange={(e) => handlePhoneChange(e.target.value)}
+            onFocus={onFocus}
+            className={className}
+            onBlur={(e) => {
+              const phoneNumber = parsePhoneNumber(e.target.value, "US");
+              if (phoneNumber) {
+                onChange(phoneNumber.format("NATIONAL"));
+              } else {
+                onChange(null);
+              }
+              onBlur?.();
+            }}
+            placeholder="(123) 456-7890"
+          />
           <input type="text" placeholder="Phone Number" value={driverData.phone} onChange={(e) => setDriverData({ ...driverData, phone: e.target.value })} />
-          <input type="email" placeholder="Email" value={driverData.email} onChange={(e) => setDriverData({ ...driverData, email: e.target.value })} />
-          <input type="text" placeholder="Perks" value={driverData.perks} onChange={(e) => setDriverData({ ...driverData, perks: e.target.value })} />
+          <Input placeholder="Email" type="email" value={driverData.email ?? ""} onChange={(e) => setDriverData({ ...driverData, email: e.target.value })}  />
+          <Input placeholder="Perks" type="text" value={driverData.perks ?? ""} onChange={(e) => setDriverData({ ...driverData, perks: e.target.value })}  />
           <Select onValueChange={(truckId) => setDriverData({ ...driverData, truck_id: Number(truckId) })}>
             <SelectTrigger>
               <SelectValue placeholder="Select a truck" />

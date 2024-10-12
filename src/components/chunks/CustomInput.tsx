@@ -1,4 +1,4 @@
-import { AsYouType, parsePhoneNumber } from "libphonenumber-js";
+import { parsePhoneNumber } from "libphonenumber-js";
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { CalendarIcon } from "lucide-react";
@@ -138,7 +138,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       );
     case "checkbox":
       return (
-        <div className={MIDDLE_WIDTH_INPUT}>
+        <div className={SMALL_WIDTH_INPUT}>
           <Checkbox
             checked={value ?? false}
             onCheckedChange={(checked) => {
@@ -157,7 +157,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
           case "truckTypeSelect":
           case "latePickupSelect":
             return (
-              <div className={MIDDLE_WIDTH_INPUT}>
+              <div className={SMALL_WIDTH_INPUT}>
                 <Select onValueChange={onChange} value={value ?? undefined}>
                   <SelectTrigger className={className}>
                     <SelectValue placeholder="Select..." />

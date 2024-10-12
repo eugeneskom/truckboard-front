@@ -17,27 +17,20 @@ const initialCarrierData: CarrierData = {
   spam: false,
 };
 
-type AddNewCarrierProps = {
+type AddCarrierProps = {
   setIsAddNew: React.Dispatch<React.SetStateAction<boolean>>;
   user: UserData | null;
   updatedColumnDefinitions: typeof columnDefinitions;
 };
 
-function AddNewCarrier({ setIsAddNew, user, updatedColumnDefinitions }: AddNewCarrierProps) {
+function AddCarrier({ setIsAddNew, user, updatedColumnDefinitions }: AddCarrierProps) {
   const router = useRouter();
   const [newCarrier, setNewCarrier] = useState<CarrierData>(initialCarrierData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const componentRef = useRef<HTMLDivElement>(null);
 
-  const handleInputChange = (key: keyof CarrierData, value: string | boolean) => {
-    setNewCarrier((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
-
-  const handleAddNewCarrier = async () => {
+  const handleAddCarrier = async () => {
     if (!user || !user.id) {
       setError("User information is missing. Please log in again.");
       return;
@@ -75,31 +68,13 @@ function AddNewCarrier({ setIsAddNew, user, updatedColumnDefinitions }: AddNewCa
         <TableCaption>Fill out carrier&apos;s info</TableCaption>
         <TableHeader>
           <TableRow>
-            {/* <TableHead>Home City</TableHead>
-            <TableHead>Carrier Email</TableHead>
-            <TableHead>MC Number</TableHead>
-            <TableHead>Company Name</TableHead>
-            <TableHead>Company Phone</TableHead>
-            <TableHead>Truck Type Spam</TableHead>
-            <TableHead>Spam</TableHead> */}
+         
             {updatedColumnDefinitions.map((columnDef) => (
               <TableHead key={columnDef.key}>{columnDef.label}</TableHead>
             ))}
           </TableRow>
         </TableHeader>
         <TableRow>
-          {/* {Object.entries(newCarrier).map(([key, value]) => (
-            <TableCell key={key}>
-              <input
-                type={typeof value === "boolean" ? "checkbox" : "text"}
-                checked={typeof value === "boolean" ? value : undefined}
-                value={typeof value !== "boolean" ? value : undefined}
-                onChange={(e) => handleInputChange(key as keyof CarrierData, e.target.type === "checkbox" ? e.target.checked : e.target.value)}
-                className="w-full p-1 border rounded"
-              />
-            </TableCell>
-          ))} */}
-
           {updatedColumnDefinitions.map((columnDef) => (
             <TableCell key={columnDef.key}>
               <CustomInput
@@ -109,15 +84,12 @@ function AddNewCarrier({ setIsAddNew, user, updatedColumnDefinitions }: AddNewCa
                   const updatedFields = { [columnDef.key]: value };
                   setNewCarrier((prev) => ({ ...prev, ...updatedFields }));
                 }}
-                // onFocus={() => setEditingCell({ rowIndex: -1, field: columnDef.key })}
-                // onBlur={() => setEditingCell(null)}
-                // className={editingCell?.rowIndex === -1 && editingCell?.field === columnDef.key ? "bg-blue-100" : ""}
               />
             </TableCell>
           ))}
 
           <TableCell>
-            <Button className="w-full" onClick={handleAddNewCarrier} disabled={isLoading}>
+            <Button className="w-full" onClick={handleAddCarrier} disabled={isLoading}>
               {isLoading ? "Saving..." : "Save"}
             </Button>
           </TableCell>
@@ -127,4 +99,4 @@ function AddNewCarrier({ setIsAddNew, user, updatedColumnDefinitions }: AddNewCa
   );
 }
 
-export default AddNewCarrier;
+export default AddCarrier;
