@@ -17,7 +17,7 @@ const initialCarrierData: CarrierData = {
 
 type AddNewCarrierProps = {
   setIsAddNew: React.Dispatch<React.SetStateAction<boolean>>;
-  user: UserData;
+  user: UserData | null;
 };
 
 function AddNewCarrier({ setIsAddNew, user }: AddNewCarrierProps) {

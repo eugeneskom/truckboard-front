@@ -10,7 +10,7 @@ async function fetchCarrierData() {
     },
   }); // Fetch data from the server
   const data = await res.json();
-  console.log("process.env.NEXT_PUBLIC_SERVER_URL", process.env.NEXT_PUBLIC_SERVER_URL, data);
+  // console.log("process.env.NEXT_PUBLIC_SERVER_URL", process.env.NEXT_PUBLIC_SERVER_URL, data);
 
   // Check if the response is okay
   if (!res.ok) {

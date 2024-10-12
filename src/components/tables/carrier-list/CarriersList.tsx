@@ -2,8 +2,8 @@
 // Import necessary React and Next.js types
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import CarriersListAddNew from "./AddNewCarrier";
-import { CarrierData, DriverData, TruckData } from "@/types";
-import { useState } from "react";
+import { CarrierData, DriverData, TruckData, UserData } from "@/types";
+import { useEffect, useState } from "react";
 import { Button } from "../../ui/button";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -15,6 +15,7 @@ import AddTruck from "@/components/buttons/AddTruck";
 import ExistingTrucks from "./ExistingTrucks";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ExistingDrivers from "./ExistingDrivers";
+import AddDriver from "./AddDriver";
 
 // Define the props interface that will be passed to your page component
 interface TableProps {
@@ -25,8 +26,8 @@ interface TableProps {
 function CarriersList({ data }: TableProps) {
   const router = useRouter();
   const [editingRow, setEditingRow] = useState<number | null>(null);
-  const user = window.localStorage.getItem("user") ? JSON.parse(window.localStorage.getItem("user") || "") : null;
-
+  // const user = window.localStorage.getItem("user") ? JSON.parse(window.localStorage.getItem("user") || "") : null;
+  const [user, setUser] = useState<UserData | null>(null);
   const [editingData, setEditingData] = useState<CarrierData>({
     id: 0,
     home_city: "",
@@ -63,7 +64,17 @@ function CarriersList({ data }: TableProps) {
   const [isAddTruck, setIsAddTruck] = useState<number | undefined | string>(0);
   const [carrierTrucks, setCarrierTrucks] = useState<TruckData[]>([]);
   const [carriersDrivers, setCarriersDrivers] = useState<DriverData[]>([]);
-  console.log("editingData", editingData, carrierTrucks, carriersDrivers);
+  // console.log("editingData", editingData, carrierTrucks, carriersDrivers);
+
+  useEffect(() => {
+    // Only run this code on the client
+    const storedUser = window.localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+
   const setEditingRowHandler = (index: number) => {
     setEditingRow(index);
     setEditingData(data[index]);
@@ -77,9 +88,9 @@ function CarriersList({ data }: TableProps) {
     });
   };
 
-  console.log("CarriersList: ", data);
+  // console.log("CarriersList: ", data);
 
-  console.log("process.env.NEXT_PUBLIC_SERVER_URL", process.env.NEXT_PUBLIC_SERVER_URL);
+  // console.log("process.env.NEXT_PUBLIC_SERVER_URL", process.env.NEXT_PUBLIC_SERVER_URL);
 
   const handleUpdateCarrier = async (id: number | undefined | string) => {
     if (!id) return setEditingRow(null);
@@ -107,7 +118,7 @@ function CarriersList({ data }: TableProps) {
     }
   };
 
-  console.log(editingData);
+  // console.log(editingData);
 
   const handleAddTruck = async (carrierId: string | number | undefined) => {
     if (!carrierId) return console.log("handleAddTruck no carrierId : ", carrierId);
@@ -246,8 +257,9 @@ function CarriersList({ data }: TableProps) {
                       <AddTruck onClick={() => handleFetchTrucks(item.id)} />
                     </TableCell>
                   </TableRow>
-                  {isAddTruck === item.id && (
+                  {isAddTruck === item.id && item.id != undefined && (
                     <>
+                      <AddDriver addTruck={handleAddTruck} addDriverF={handleAddDriver} item={item} setTruckData={setTruckData} truckData={truckData} setDriverData={setDriverData} driverData={driverData} carriersDrivers={carriersDrivers} carrierTrucks={carrierTrucks} />
                       <TableRow>
                         <TableCell colSpan={6}>
                           <form
@@ -268,6 +280,7 @@ function CarriersList({ data }: TableProps) {
                             <label>
                               {" "}
                               Dims:
+                              
                               <input type="text" placeholder="Dimensions" value={truckData.dims} onChange={(e) => setTruckData({ ...truckData, dims: e.target.value })} />
                             </label>
                             <br />
@@ -297,7 +310,7 @@ function CarriersList({ data }: TableProps) {
                             </SelectTrigger>
                             <SelectContent>
                               {carrierTrucks
-                                .filter((truck) => !carriersDrivers.find(driver => driver.truck_id === truck.id))
+                                .filter((truck) => !carriersDrivers.find((driver) => driver.truck_id === truck.id))
                                 .map((truck) => {
                                   console.log("carrierTrucksMap: ", truck);
                                   return truck;
@@ -315,14 +328,8 @@ function CarriersList({ data }: TableProps) {
 
                       <TableRow>
                         <TableCell colSpan={12}>
-                          <ExistingTrucks 
-                          carrierTrucks={carrierTrucks} 
-                          carriersDrivers={carriersDrivers} 
-                          onUpdate={() => console.log("Updated carrier details")} />
-                          <ExistingDrivers
-                          carriersDrivers={carriersDrivers} 
-                          carrierTrucks={carrierTrucks} 
-                          />
+                          <ExistingTrucks carrierTrucks={carrierTrucks} carriersDrivers={carriersDrivers} onUpdate={() => console.log("Updated carrier details")} />
+                          <ExistingDrivers carriersDrivers={carriersDrivers} carrierTrucks={carrierTrucks} />
                         </TableCell>
                       </TableRow>
                     </>
@@ -330,7 +337,7 @@ function CarriersList({ data }: TableProps) {
                 </>
               )}
             </>
-          ))} 
+          ))}
           <TableRow>
             {/* {!isAddNew && ( */}
             <TableCell>

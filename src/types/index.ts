@@ -6,7 +6,7 @@ export type CarrierData = {
   mc_number: string;
   company_name: string;
   company_phone: string;
-  truck_type_spam: string;
+  truck_type_spam: "" | "VH" | "SB";
   spam: boolean;
   driver_count?: number;
   truck_count?: number;
@@ -106,4 +106,9 @@ export interface SearchRateType {
   driver_phone: string;
   driver_email: string;
   perks: string;
+}
+
+
+export interface TruckTypeData {
+  type: "" | "VH" | "SB";
 }
