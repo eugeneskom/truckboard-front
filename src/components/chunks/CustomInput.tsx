@@ -24,31 +24,46 @@ interface CustomInputProps {
 const MIDDLE_WIDTH_INPUT = "min-w-[150px]";
 const SMALL_WIDTH_INPUT = "min-w-[90px]";
 
+// Function to strip non-digits and limit to 10 digits
+const stripAndLimitPhoneNumber = (input: string): string => {
+  // Remove all non-digit characters
+  let digits = input.replace(/\D/g, "");
+
+  // Remove +1 prefix if present
+  if (digits.length === 11 && digits.startsWith("1")) {
+    digits = digits.slice(1);
+  }
+
+  // Limit to 10 digits
+  return digits.slice(0, 10);
+};
+
+// Function to format phone number for display
+const formatPhoneNumberForDisplay = (input: string | number | undefined | null): string => {
+  // Convert input to string and remove non-digit characters
+  const digits = String(input || '').replace(/\D/g, '');
+
+  if (digits.length === 0) return "";
+  if (digits.length <= 3) return `(${digits}`;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
+
 export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onChange, onFocus, onBlur, className }) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  const formatPhoneNumber = (input: string | undefined | null) => {
-    if (!input) return "";
-    try {
-      const phoneNumber = parsePhoneNumber(input, "US");
-      if (phoneNumber) {
-        return phoneNumber.format("NATIONAL");
-      }
-    } catch (error) {
-      // If parsing fails, fall back to incomplete formatting
-    }
-    return new AsYouType("US").input(input);
-  };
+  const [displayValue, setDisplayValue] = useState(formatPhoneNumberForDisplay(value || ""));
 
   const handlePhoneChange = (input: string) => {
-    const formatter = new AsYouType("US");
-    const formattedNumber = formatter.input(input);
-    onChange(formattedNumber);
+    const digits = stripAndLimitPhoneNumber(input);
+    const formattedNumber = formatPhoneNumberForDisplay(digits);
+    setDisplayValue(formattedNumber);
+    onChange(digits); // Store only digits in the state
   };
+
 
   switch (columnDef.type) {
     case "readonly":
-      return <div className={`${MIDDLE_WIDTH_INPUT} p-2 bg-gray-100 rounded`}>{value ?? ''}</div>;
+      return <div className={`${MIDDLE_WIDTH_INPUT} p-2 bg-gray-100 rounded`}>{value ?? ""}</div>;
     case "date":
       return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -74,7 +89,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
     case "email":
       return (
         <div className={MIDDLE_WIDTH_INPUT}>
-          <Input type="email" value={value ?? ''} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={className} />
+          <Input type="email" value={value ?? ""} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={className} />
         </div>
       );
     case "number":
@@ -82,7 +97,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
         <div className={SMALL_WIDTH_INPUT}>
           <Input
             type="number"
-            value={value ?? ''}
+            value={value ?? ""}
             onChange={(e) => {
               const newValue = e.target.valueAsNumber;
               onChange(!isNaN(newValue) ? newValue : null);
@@ -98,7 +113,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
         <div className={MIDDLE_WIDTH_INPUT}>
           <Input
             type="tel"
-            value={formatPhoneNumber(value)}
+            value={displayValue}
             onChange={(e) => handlePhoneChange(e.target.value)}
             onFocus={onFocus}
             className={className}
@@ -179,7 +194,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       }
       return (
         <div className={SMALL_WIDTH_INPUT}>
-          <Input type="text" value={value ?? ''} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={className} />
+          <Input type="text" value={value ?? ""} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={className} />
         </div>
       );
   }
