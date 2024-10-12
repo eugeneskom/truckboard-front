@@ -15,8 +15,6 @@ import TruckDimsInput from "@/components/chunks/TruckDimsInput";
 import { SearchRateType } from "@/types";
 import { useMemo } from "react";
 
-
-
 //  input types:
 type InputTypes =
   | "text"
@@ -90,8 +88,8 @@ interface CustomInputProps {
   className: string;
 }
 
-const MIN_WIDTH_INPUT = "min-w-[150px]"; // Adjust this value as needed
-const SMALL_WIDTH_INPUT = "min-w-[75px]";
+const MIDDLE_WIDTH_INPUT = "min-w-[150px]";
+const SMALL_WIDTH_INPUT = "min-w-[90px]";
 
 export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onChange, onFocus, onBlur, className }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -118,13 +116,13 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
 
   switch (columnDef.type) {
     case "readonly":
-      return <div className={`${MIN_WIDTH_INPUT} p-2 bg-gray-100 rounded`}>{value}</div>;
+      return <div className={`${MIDDLE_WIDTH_INPUT} p-2 bg-gray-100 rounded`}>{value}</div>;
     case "date":
       console.log("CustomInput value: ", value);
       return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
-            <div className={`w-full h-full min-h-[2.5rem] flex items-center justify-between px-3 py-2 border rounded-md cursor-pointer hover:bg-gray-100 ${MIN_WIDTH_INPUT}`} onClick={() => setIsOpen(true)}>
+            <div className={`w-full h-full min-h-[2.5rem] flex items-center justify-between px-3 py-2 border rounded-md cursor-pointer hover:bg-gray-100 ${MIDDLE_WIDTH_INPUT}`} onClick={() => setIsOpen(true)}>
               {value ? <span>{format(new Date(value), "yyyy-MM-dd")}</span> : <span className="text-gray-400">Select date</span>}
               <CalendarIcon className="h-4 w-4 opacity-50" />
             </div>
@@ -144,7 +142,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       );
     case "email":
       return (
-        <div className={MIN_WIDTH_INPUT}>
+        <div className={MIDDLE_WIDTH_INPUT}>
           <Input type="email" value={value} onChange={(e) => onChange(e.target.value)} onFocus={onFocus} onBlur={onBlur} className={className} />
         </div>
       );
@@ -172,7 +170,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       );
     case "phone":
       return (
-        <div className={MIN_WIDTH_INPUT}>
+        <div className={MIDDLE_WIDTH_INPUT}>
           <Input
             type="tel"
             value={formatPhoneNumber(value)}
@@ -192,7 +190,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       );
     case "truckDims":
       return (
-        <div className={MIN_WIDTH_INPUT}>
+        <div className={MIDDLE_WIDTH_INPUT}>
           <TruckDimsInput value={value || ""} onChange={onChange} className={className} />
         </div>
       );
@@ -203,7 +201,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
           case "truckTypeSelect":
           case "latePickupSelect":
             return (
-              <div className={MIN_WIDTH_INPUT}>
+              <div className={MIDDLE_WIDTH_INPUT}>
                 <Select onValueChange={onChange} defaultValue={value}>
                   <SelectTrigger className={className}>
                     <SelectValue placeholder="Select..." />
@@ -221,7 +219,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
           case "carrierSelect":
           case "driverSelect":
             return (
-              <div className={MIN_WIDTH_INPUT}>
+              <div className={MIDDLE_WIDTH_INPUT}>
                 <Select onValueChange={onChange} defaultValue={value?.toString()}>
                   <SelectTrigger className={className}>
                     <SelectValue placeholder="Select..." />
@@ -282,68 +280,70 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
     setLocalData(data);
   }, [data]);
 
-  const updateData = useCallback(async (table: string, id: number, field: string, value: any) => {
-    try {
-      await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/update-data`, { table, id, field, value });
-      setData(prevData => prevData.map(item => 
-        item.search_id === id ? { ...item, [field]: value } : item
-      ));
-    } catch (error) {
-      console.error("Error updating data:", error);
-    }
-  }, [setData]);
-
-  const debouncedUpdate = useMemo(
-    () => debounce(
-      (table: string, id: number, field: string, value: any) => updateData(table, id, field, value),
-      500
-    ),
-    [updateData]
+  const updateData = useCallback(
+    // eslint-disable-next-line
+    async (table: string, id: number, field: string, value: any) => {
+      try {
+        await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/update-data`, { table, id, field, value });
+        setData((prevData) => prevData.map((item) => (item.search_id === id ? { ...item, [field]: value } : item)));
+      } catch (error) {
+        console.error("Error updating data:", error);
+      }
+    },
+    [setData]
   );
 
-  const handleUpdate = useCallback((rowIndex: number, field: string, value: any) => {
-    const row = localData[rowIndex];
-    let table: string;
-    let id: number | undefined;
+  const debouncedUpdate = useMemo(
+    () =>
+      debounce(
+        // eslint-disable-next-line
+        (table: string, id: number, field: string, value: any) => updateData(table, id, field, value),
+        500
+      ),
+    [updateData]
+  );
+  const handleUpdate = useCallback(
+    // eslint-disable-next-line
+    (rowIndex: number, field: string, value: any) => {
+      const row = localData[rowIndex];
+      let table: string;
+      let id: number | undefined;
 
-    if (["pu_city", "destination", "late_pick_up", "pu_date_start", "pu_date_end", "del_date_start", "del_date_end", "carrier_id", "truck_id", "driver_id"].includes(field)) {
-      table = "searches";
-      id = row.search_id;
-      value = value !== "" ? value.split("T")[0] : null;
-    } else if (["dead_head", "min_miles", "max_miles", "rpm", "min_rate", "round_to", "extra"].includes(field)) {
-      table = "rates";
-      id = row.search_id;
-    } else if (["home_city", "carrier_email", "mc_number", "company_name", "company_phone"].includes(field)) {
-      table = "carriers";
-      id = row.carrier_id;
-    } else if (["agent_id", "agent_name", "agent_email"].includes(field)) {
-      table = "agents";
-      id = row.agent_id;
-    } else if (["truck_number", "truck_type", "truck_dims", "payload", "accessories"].includes(field)) {
-      table = "trucks";
-      id = row.truck_id;
-    } else if (["driver_name", "driver_lastname", "driver_phone", "driver_email", "perks"].includes(field)) {
-      table = "drivers";
-      id = row.driver_id;
-    } else {
-      console.error("Unknown field:", field);
-      return;
-    }
+      if (["pu_city", "destination", "late_pick_up", "pu_date_start", "pu_date_end", "del_date_start", "del_date_end", "carrier_id", "truck_id", "driver_id"].includes(field)) {
+        table = "searches";
+        id = row.search_id;
+        value = value !== "" ? value.split("T")[0] : null;
+      } else if (["dead_head", "min_miles", "max_miles", "rpm", "min_rate", "round_to", "extra"].includes(field)) {
+        table = "rates";
+        id = row.search_id;
+      } else if (["home_city", "carrier_email", "mc_number", "company_name", "company_phone"].includes(field)) {
+        table = "carriers";
+        id = row.carrier_id;
+      } else if (["agent_id", "agent_name", "agent_email"].includes(field)) {
+        table = "agents";
+        id = row.agent_id;
+      } else if (["truck_number", "truck_type", "truck_dims", "payload", "accessories"].includes(field)) {
+        table = "trucks";
+        id = row.truck_id;
+      } else if (["driver_name", "driver_lastname", "driver_phone", "driver_email", "perks"].includes(field)) {
+        table = "drivers";
+        id = row.driver_id;
+      } else {
+        console.error("Unknown field:", field);
+        return;
+      }
 
-    if (id === undefined) {
-      console.error("Unable to determine ID for table:", table);
-      return;
-    }
+      if (id === undefined) {
+        console.error("Unable to determine ID for table:", table);
+        return;
+      }
 
-    setLocalData(prevData => 
-      prevData.map((item, index) => 
-        index === rowIndex ? { ...item, [field]: value } : item
-      )
-    );
+      setLocalData((prevData) => prevData.map((item, index) => (index === rowIndex ? { ...item, [field]: value } : item)));
 
-    debouncedUpdate(table, id, field, value);
-  }, [localData, debouncedUpdate]);
-
+      debouncedUpdate(table, id, field, value);
+    },
+    [localData, debouncedUpdate]
+  );
 
   // const debouncedUpdate = useCallback(
   //   // eslint-disable-next-line
