@@ -8,6 +8,7 @@ import TruckDimsInput from "./TruckDimsInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import format from "date-fns/format";
 import { ColumnDef } from "@/types";
+import { Checkbox } from "../ui/checkbox";
 
 interface CustomInputProps {
   columnDef: ColumnDef;
@@ -124,6 +125,20 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       return (
         <div className={MIDDLE_WIDTH_INPUT}>
           <TruckDimsInput value={value || ""} onChange={onChange} className={className} />
+        </div>
+      );
+    case "checkbox":
+      return (
+        <div className={MIDDLE_WIDTH_INPUT}>
+          <Checkbox
+            checked={value as boolean}
+            onCheckedChange={(checked) => {
+              onChange(checked);
+            }}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            className={className}
+          />
         </div>
       );
     default:
