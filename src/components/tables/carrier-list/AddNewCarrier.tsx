@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { CarrierData, UserData } from "@/types";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { columnDefinitions } from "./CarriersList";
+import { CustomInput } from "@/components/chunks/CustomInput";
 
 const initialCarrierData: CarrierData = {
   home_city: "",
@@ -18,9 +20,10 @@ const initialCarrierData: CarrierData = {
 type AddNewCarrierProps = {
   setIsAddNew: React.Dispatch<React.SetStateAction<boolean>>;
   user: UserData | null;
+  updatedColumnDefinitions: typeof columnDefinitions;
 };
 
-function AddNewCarrier({ setIsAddNew, user }: AddNewCarrierProps) {
+function AddNewCarrier({ setIsAddNew, user, updatedColumnDefinitions }: AddNewCarrierProps) {
   const router = useRouter();
   const [newCarrier, setNewCarrier] = useState<CarrierData>(initialCarrierData);
   const [isLoading, setIsLoading] = useState(false);
@@ -72,17 +75,20 @@ function AddNewCarrier({ setIsAddNew, user }: AddNewCarrierProps) {
         <TableCaption>Fill out carrier&apos;s info</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead>Home City</TableHead>
+            {/* <TableHead>Home City</TableHead>
             <TableHead>Carrier Email</TableHead>
             <TableHead>MC Number</TableHead>
             <TableHead>Company Name</TableHead>
             <TableHead>Company Phone</TableHead>
             <TableHead>Truck Type Spam</TableHead>
-            <TableHead>Spam</TableHead>
+            <TableHead>Spam</TableHead> */}
+            {updatedColumnDefinitions.map((columnDef) => (
+              <TableHead key={columnDef.key}>{columnDef.label}</TableHead>
+            ))}
           </TableRow>
         </TableHeader>
         <TableRow>
-          {Object.entries(newCarrier).map(([key, value]) => (
+          {/* {Object.entries(newCarrier).map(([key, value]) => (
             <TableCell key={key}>
               <input
                 type={typeof value === "boolean" ? "checkbox" : "text"}
@@ -92,7 +98,24 @@ function AddNewCarrier({ setIsAddNew, user }: AddNewCarrierProps) {
                 className="w-full p-1 border rounded"
               />
             </TableCell>
+          ))} */}
+
+          {updatedColumnDefinitions.map((columnDef) => (
+            <TableCell key={columnDef.key}>
+              <CustomInput
+                columnDef={columnDef}
+                value={newCarrier[columnDef.key as keyof CarrierData]}
+                onChange={(value) => {
+                  const updatedFields = { [columnDef.key]: value };
+                  setNewCarrier((prev) => ({ ...prev, ...updatedFields }));
+                }}
+                // onFocus={() => setEditingCell({ rowIndex: -1, field: columnDef.key })}
+                // onBlur={() => setEditingCell(null)}
+                // className={editingCell?.rowIndex === -1 && editingCell?.field === columnDef.key ? "bg-blue-100" : ""}
+              />
+            </TableCell>
           ))}
+
           <TableCell>
             <Button className="w-full" onClick={handleAddNewCarrier} disabled={isLoading}>
               {isLoading ? "Saving..." : "Save"}
