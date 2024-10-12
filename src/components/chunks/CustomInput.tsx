@@ -16,9 +16,9 @@ interface CustomInputProps {
   value: any;
   // eslint-disable-next-line
   onChange: (value: any) => void;
-  onFocus: () => void;
-  onBlur: () => void;
-  className: string;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  className?: string;
 }
 
 const MIDDLE_WIDTH_INPUT = "min-w-[150px]";
@@ -27,14 +27,13 @@ const SMALL_WIDTH_INPUT = "min-w-[90px]";
 export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onChange, onFocus, onBlur, className }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const formatPhoneNumber = (input: string) => {
+  const formatPhoneNumber = (input: string | undefined | null) => {
     if (!input) return "";
     try {
       const phoneNumber = parsePhoneNumber(input, "US");
       if (phoneNumber) {
         return phoneNumber.format("NATIONAL");
       }
-      // eslint-disable-next-line
     } catch (error) {
       // If parsing fails, fall back to incomplete formatting
     }
@@ -49,9 +48,8 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
 
   switch (columnDef.type) {
     case "readonly":
-      return <div className={`${MIDDLE_WIDTH_INPUT} p-2 bg-gray-100 rounded`}>{value}</div>;
+      return <div className={`${MIDDLE_WIDTH_INPUT} p-2 bg-gray-100 rounded`}>{value ?? ''}</div>;
     case "date":
-      console.log("CustomInput value: ", value);
       return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
@@ -65,7 +63,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
               mode="single"
               selected={value ? new Date(value) : undefined}
               onSelect={(date) => {
-                onChange(date?.toISOString() || null);
+                onChange(date?.toISOString() ?? null);
                 setIsOpen(false);
               }}
               initialFocus
@@ -76,7 +74,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
     case "email":
       return (
         <div className={MIDDLE_WIDTH_INPUT}>
-          <Input type="email" value={value} onChange={(e) => onChange(e.target.value)} onFocus={onFocus} onBlur={onBlur} className={className} />
+          <Input type="email" value={value ?? ''} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={className} />
         </div>
       );
     case "number":
@@ -84,20 +82,14 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
         <div className={SMALL_WIDTH_INPUT}>
           <Input
             type="number"
-            value={value}
+            value={value ?? ''}
             onChange={(e) => {
               const newValue = e.target.valueAsNumber;
-              if (!isNaN(newValue) && newValue >= 0) {
-                onChange(newValue);
-              }
+              onChange(!isNaN(newValue) ? newValue : null);
             }}
             onFocus={onFocus}
             onBlur={onBlur}
-            className={`${className} [appearance:textfield]
-          [&::-webkit-outer-spin-button]:appearance-none
-          [&::-webkit-inner-spin-button]:appearance-none
-          `}
-            min={0}
+            className={`${className} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
           />
         </div>
       );
@@ -109,13 +101,15 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
             value={formatPhoneNumber(value)}
             onChange={(e) => handlePhoneChange(e.target.value)}
             onFocus={onFocus}
-            className={`${className}`}
+            className={className}
             onBlur={(e) => {
               const phoneNumber = parsePhoneNumber(e.target.value, "US");
               if (phoneNumber) {
                 onChange(phoneNumber.format("NATIONAL"));
+              } else {
+                onChange(null);
               }
-              onBlur();
+              onBlur?.();
             }}
             placeholder="(123) 456-7890"
           />
@@ -131,7 +125,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       return (
         <div className={MIDDLE_WIDTH_INPUT}>
           <Checkbox
-            checked={value as boolean}
+            checked={value ?? false}
             onCheckedChange={(checked) => {
               onChange(checked);
             }}
@@ -149,7 +143,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
           case "latePickupSelect":
             return (
               <div className={MIDDLE_WIDTH_INPUT}>
-                <Select onValueChange={onChange} defaultValue={value}>
+                <Select onValueChange={onChange} value={value ?? undefined}>
                   <SelectTrigger className={className}>
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
@@ -167,7 +161,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
           case "driverSelect":
             return (
               <div className={MIDDLE_WIDTH_INPUT}>
-                <Select onValueChange={onChange} defaultValue={value?.toString()}>
+                <Select onValueChange={onChange} value={value?.toString() ?? undefined}>
                   <SelectTrigger className={className}>
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
@@ -185,7 +179,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       }
       return (
         <div className={SMALL_WIDTH_INPUT}>
-          <Input type="text" value={value} onChange={(e) => onChange(e.target.value)} onFocus={onFocus} onBlur={onBlur} className={className} />
+          <Input type="text" value={value ?? ''} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={className} />
         </div>
       );
   }
