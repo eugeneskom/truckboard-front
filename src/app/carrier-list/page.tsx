@@ -1,7 +1,6 @@
 import React from "react";
 import CarriersList from "@/components/tables/carrier-list/CarriersList";
 import { CarrierData } from "@/types";
-import UseWebSocketExample from "@/components/useWebSocketExample";
 
 async function fetchCarrierData() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers`, {
@@ -27,7 +26,6 @@ async function CarrierList() {
   return (
     <>
       <CarriersList data={data} />
-      <UseWebSocketExample />
     </>
   );
 }

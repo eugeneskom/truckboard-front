@@ -1,32 +1,62 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useWebSocket } from './WebSocketProvider';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-const UseWebSocketExample: React.FC = () => {
-  // eslint-disable-next-line
-  const { lastMessage } = useWebSocket();
-  // eslint-disable-next-line
-  const [data, setData] = useState<any[]>([]);
+interface WebSocketContextType {
+  socket: WebSocket | null;
+  sendMessage: (message: string) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  lastMessage: any;  
+}
+
+const WebSocketContext = createContext<WebSocketContextType>({
+  socket: null,
+  sendMessage: () => {},
+  lastMessage: null, 
+});
+
+export const useWebSocket = () => useContext(WebSocketContext);
+
+export const WebSocketProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
+  const [socket, setSocket] = useState<WebSocket | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [lastMessage, setLastMessage] = useState<any>(null);  
 
   useEffect(() => {
-    if (lastMessage) {
-      // Handle the incoming message
-      setData(prevData => {
-        // Update the relevant item in your data array
-        return prevData.map(item => 
-          item.id === lastMessage.id ? { ...item, [lastMessage.field]: lastMessage.value } : item
-        );
-      });
+    const ws = new WebSocket('ws://localhost:3001');
+
+    ws.onopen = () => {
+      console.log('Connected to WebSocket');
+    };
+
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      console.log('Received message:', message);
+      setLastMessage(message);  
+    };
+
+    ws.onclose = () => {
+      console.log('Disconnected from WebSocket');
+    };
+
+    setSocket(ws);
+
+    return () => {
+      ws.close();
+    };
+  }, []);
+
+  const sendMessage = (message: string) => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(message);
+    } else {
+      console.error('WebSocket is not connected');
     }
-  }, [lastMessage]);
+  };
 
   return (
-    <div>
-      <h2>Last WebSocket Message:</h2>
-      <pre>{JSON.stringify(lastMessage, null, 2)}</pre>
-    </div>
+    <WebSocketContext.Provider value={{ socket, sendMessage, lastMessage }}>
+      {children}
+    </WebSocketContext.Provider>
   );
 };
-
-export default UseWebSocketExample;
