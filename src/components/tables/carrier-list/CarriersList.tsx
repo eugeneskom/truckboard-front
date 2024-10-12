@@ -13,9 +13,10 @@ import SaveBtn from "@/components/buttons/SaveBtn";
 import UndoBtn from "@/components/buttons/UndoBtn";
 import AddTruck from "@/components/buttons/AddTruck";
 import ExistingTrucks from "./ExistingTrucks";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import ExistingDrivers from "./ExistingDrivers";
-import AddDriver from "./AddDriver";
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+// import ExistingDrivers from "./ExistingDrivers";
+// import AddTruckNdriver from "./AddTruckNdriver";
+import AddTruckNdriver from "./AddTruckNdriver";
 
 // Define the props interface that will be passed to your page component
 interface TableProps {
@@ -41,24 +42,7 @@ function CarriersList({ data }: TableProps) {
     // truck_count: 0,
     // driver_count: 0,
   });
-  const [truckData, setTruckData] = useState<TruckData>({
-    id: 0,
-    carrier_id: 0,
-    type: "",
-    dims: "",
-    payload: 0,
-    accessories: "",
-  });
-  const [driverData, setDriverData] = useState<DriverData>({
-    id: 0,
-    carrier_id: 0,
-    name: "",
-    lastname: "",
-    phone: "",
-    email: "",
-    perks: "",
-    truck_id: 0,
-  });
+ 
 
   const [isAddNew, setIsAddNew] = useState<boolean>(false);
   const [isAddTruck, setIsAddTruck] = useState<number | undefined | string>(0);
@@ -74,7 +58,6 @@ function CarriersList({ data }: TableProps) {
     }
   }, []);
 
-
   const setEditingRowHandler = (index: number) => {
     setEditingRow(index);
     setEditingData(data[index]);
@@ -88,9 +71,6 @@ function CarriersList({ data }: TableProps) {
     });
   };
 
-  // console.log("CarriersList: ", data);
-
-  // console.log("process.env.NEXT_PUBLIC_SERVER_URL", process.env.NEXT_PUBLIC_SERVER_URL);
 
   const handleUpdateCarrier = async (id: number | undefined | string) => {
     if (!id) return setEditingRow(null);
@@ -118,56 +98,6 @@ function CarriersList({ data }: TableProps) {
     }
   };
 
-  // console.log(editingData);
-
-  const handleAddTruck = async (carrierId: string | number | undefined) => {
-    if (!carrierId) return console.log("handleAddTruck no carrierId : ", carrierId);
-    try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/add/trucks`, {
-        ...truckData,
-        carrier_id: carrierId,
-      });
-      console.log("Truck added:", response.data, truckData);
-      setIsAddTruck(0);
-      setTruckData({
-        id: 0,
-        carrier_id: 0,
-        type: "",
-        dims: "",
-        payload: 0,
-        accessories: "",
-      });
-
-      router.refresh();
-    } catch (error) {
-      console.error("Add truck error:", error);
-    }
-  };
-
-  const handleAddDriver = async (
-    // truck_id: number,
-    carrierId: string | number | undefined
-  ) => {
-    if (!carrierId) return console.log("handleAddDriver no carrierId : ", carrierId);
-    try {
-      const params = { ...driverData, carrier_id: carrierId }; // for now set initial truck_id to 0 so it does not belong to any truck
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/drivers`, params);
-      console.log("Driver added:", response.data, truckData);
-      setIsAddTruck(0);
-      setTruckData({
-        id: 0,
-        carrier_id: 0,
-        type: "",
-        dims: "",
-        payload: 0,
-        accessories: "",
-      });
-
-      router.refresh();
-    } catch (error) {
-      console.error("Add driver error:", error);
-    }
-  };
 
   const handleGetTrucksByCarrier = async (id: number | string | undefined) => {
     if (!id) return console.log("handleGetTrucksByCarrier no id : ", id);
@@ -259,77 +189,14 @@ function CarriersList({ data }: TableProps) {
                   </TableRow>
                   {isAddTruck === item.id && item.id != undefined && (
                     <>
-                      <AddDriver addTruck={handleAddTruck} addDriverF={handleAddDriver} item={item} setTruckData={setTruckData} truckData={truckData} setDriverData={setDriverData} driverData={driverData} carriersDrivers={carriersDrivers} carrierTrucks={carrierTrucks} />
+                      <AddTruckNdriver setIsAddTruck={setIsAddTruck} item={item} carriersDrivers={carriersDrivers} carrierTrucks={carrierTrucks} />
+                      
                       <TableRow>
                         <TableCell colSpan={6}>
-                          <form
-                            onSubmit={(e) => {
-                              e.preventDefault();
-                              handleAddTruck(item.id);
-                            }}
-                          >
-                            <label>
-                              Truck Type:
-                              {/* <input type="text" placeholder="Type" value={truckData.type} onChange={(e) => setTruckData({ ...truckData, type: e.target.value })} /> */}
-                              <select onChange={(e) => setTruckData({ ...truckData, type: e.target.value as "" | "VH" | "SB" })}>
-                                <option value="VH">VH</option>
-                                <option value="SB">SB</option>
-                              </select>
-                            </label>
-                            <br />
-                            <label>
-                              {" "}
-                              Dims:
-                              
-                              <input type="text" placeholder="Dimensions" value={truckData.dims} onChange={(e) => setTruckData({ ...truckData, dims: e.target.value })} />
-                            </label>
-                            <br />
-                            <label>
-                              Payload:
-                              <input type="number" placeholder="Payload" value={truckData.payload} onChange={(e) => setTruckData({ ...truckData, payload: parseInt(e.target.value) })} />
-                            </label>
-                            <br />
-                            <label>
-                              Accessories:
-                              <input type="text" placeholder="Accessories" value={truckData.accessories} onChange={(e) => setTruckData({ ...truckData, accessories: e.target.value })} />
-                            </label>
-
-                            <br />
-                            <Button type="submit">Add Truck</Button>
-                          </form>
-                        </TableCell>
-                        <TableCell colSpan={6}>
-                          <input type="text" placeholder="Driver Name" value={driverData.name} onChange={(e) => setDriverData({ ...driverData, name: e.target.value })} />
-                          <input type="text" placeholder="Last Name" value={driverData.lastname} onChange={(e) => setDriverData({ ...driverData, lastname: e.target.value })} />
-                          <input type="text" placeholder="Phone Number" value={driverData.phone} onChange={(e) => setDriverData({ ...driverData, phone: e.target.value })} />
-                          <input type="email" placeholder="Email" value={driverData.email} onChange={(e) => setDriverData({ ...driverData, email: e.target.value })} />
-                          <input type="text" placeholder="Perks" value={driverData.perks} onChange={(e) => setDriverData({ ...driverData, perks: e.target.value })} />
-                          <Select onValueChange={(truckId) => setDriverData({ ...driverData, truck_id: Number(truckId) })}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a truck" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {carrierTrucks
-                                .filter((truck) => !carriersDrivers.find((driver) => driver.truck_id === truck.id))
-                                .map((truck) => {
-                                  console.log("carrierTrucksMap: ", truck);
-                                  return truck;
-                                })
-                                .map((truck) => (
-                                  <SelectItem key={truck.id} value={String(truck.id)}>
-                                    {truck.type} (Payload : {truck.payload})
-                                  </SelectItem>
-                                ))}
-                            </SelectContent>
-                          </Select>
-                          <Button onClick={() => handleAddDriver(item.id)}>Add Driver</Button>
-                        </TableCell>
-                      </TableRow>
-
-                      <TableRow>
-                        <TableCell colSpan={12}>
                           <ExistingTrucks carrierTrucks={carrierTrucks} carriersDrivers={carriersDrivers} onUpdate={() => console.log("Updated carrier details")} />
-                          <ExistingDrivers carriersDrivers={carriersDrivers} carrierTrucks={carrierTrucks} />
+                        </TableCell>
+                        <TableCell colSpan={6}>
+                          <ExistingTrucks carrierTrucks={carrierTrucks} carriersDrivers={carriersDrivers} onUpdate={() => console.log("Updated carrier details")} />
                         </TableCell>
                       </TableRow>
                     </>

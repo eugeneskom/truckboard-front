@@ -1,4 +1,3 @@
-import { SearchRateType } from "@/types";
 import { AsYouType, parsePhoneNumber } from "libphonenumber-js";
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -8,72 +7,7 @@ import { Input } from "../ui/input";
 import TruckDimsInput from "./TruckDimsInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import format from "date-fns/format";
-
-
-//  input types:
-type InputTypes =
-  | "text"
-  | "date"
-  | "email"
-  | "number"
-  | "readonly"
-  | "phone"
-  | "truckDims"
-  | { type: "select"; options: string[] }
-  | { type: "truckTypeSelect"; options: string[] }
-  | { type: "carrierSelect"; options: { id: number; name: string }[] }
-  | { type: "driverSelect"; options: { id: number; name: string }[] }
-  | { type: "latePickupSelect"; options: string[] };
-
-
-// the structure for column definitions
-interface ColumnDef {
-  key: keyof SearchRateType;
-  type: InputTypes;
-  label: string;
-}
-
-//  Column definitions
-export const columnDefinitions: ColumnDef[] = [
-  { key: "search_id", type: "number", label: "Search ID" },
-  { key: "pu_city", type: "text", label: "Pickup City" },
-  { key: "destination", type: "text", label: "Destination" },
-  { key: "pu_date_start", type: "date", label: "Pickup Start Date" },
-  { key: "pu_date_end", type: "date", label: "Pickup End Date" },
-  { key: "del_date_start", type: "date", label: "Delivery Start Date" },
-  { key: "del_date_end", type: "date", label: "Delivery End Date" },
-  { key: "dead_head", type: "number", label: "Dead Head" },
-  { key: "min_miles", type: "number", label: "Min Miles" },
-  { key: "max_miles", type: "number", label: "Max Miles" },
-  { key: "rpm", type: "number", label: "RPM" },
-  { key: "min_rate", type: "number", label: "Min Rate" },
-  { key: "round_to", type: "number", label: "Round To" },
-  { key: "extra", type: "number", label: "Extra" },
-  // { key: "carrier_id", type: "readonly", label: "Carrier ID" },
-  { key: "truck_dims", type: "truckDims", label: "Truck Dimensions" },
-  // { key: "company_name", type: "readonly", label: "Carrier Name" },
-  { key: "late_pick_up", type: { type: "latePickupSelect", options: ["morning", "afternoon"] }, label: "Late Pickup" },
-  { key: "home_city", type: "text", label: "Home City" },
-  { key: "carrier_email", type: "email", label: "Carrier Email" },
-  { key: "mc_number", type: "text", label: "MC Number" },
-  { key: "company_name", type: "text", label: "Company Name" },
-  { key: "company_phone", type: "phone", label: "Company Phone" },
-  // { key: "agent_id", type: "number", label: "Agent ID" },
-  { key: "agent_name", type: "text", label: "Agent Name" },
-  // { key: "agent_email", type: "email", label: "Agent Email" },
-  // { key: "truck_id", type: "number", label: "Truck ID" },
-  { key: "truck_type", type: { type: "truckTypeSelect", options: ["VH", "SB", "DD"] }, label: "Truck Type" },
-  // { key: "truck_dims", type: "text", label: "Truck Dimensions" },
-  { key: "payload", type: "number", label: "Payload" },
-  { key: "accessories", type: "text", label: "Accessories" },
-  // { key: "driver_id", type: { type: "driverSelect", options: [] }, label: "Driver" },
-  { key: "driver_name", type: "text", label: "Driver Name" },
-  { key: "driver_lastname", type: "text", label: "Driver Last Name" },
-  { key: "driver_phone", type: "phone", label: "Driver Phone" },
-  { key: "driver_email", type: "email", label: "Driver Email" },
-  { key: "perks", type: "text", label: "Perks" },
-];
-
+import { ColumnDef } from "@/types";
 
 interface CustomInputProps {
   columnDef: ColumnDef;
@@ -88,8 +22,6 @@ interface CustomInputProps {
 
 const MIDDLE_WIDTH_INPUT = "min-w-[150px]";
 const SMALL_WIDTH_INPUT = "min-w-[90px]";
-
-
 
 export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onChange, onFocus, onBlur, className }) => {
   const [isOpen, setIsOpen] = useState(false);

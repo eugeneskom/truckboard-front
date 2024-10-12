@@ -112,3 +112,28 @@ export interface SearchRateType {
 export interface TruckTypeData {
   type: "" | "VH" | "SB";
 }
+
+
+//  input types:
+type InputTypes =
+  | "text"
+  | "date"
+  | "email"
+  | "number"
+  | "readonly"
+  | "phone"
+  | "truckDims"
+  | { type: "select"; options: string[] }
+  | { type: "truckTypeSelect"; options: string[] }
+  | { type: "carrierSelect"; options: { id: number; name: string }[] }
+  | { type: "driverSelect"; options: { id: number; name: string }[] }
+  | { type: "latePickupSelect"; options: string[] };
+
+
+
+// the structure for column definitions
+export interface ColumnDef {
+  key: keyof SearchRateType;
+  type: InputTypes;
+  label: string;
+}
