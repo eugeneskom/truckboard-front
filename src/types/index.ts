@@ -123,6 +123,7 @@ type InputTypes =
   | "readonly"
   | "phone"
   | "truckDims"
+  | "checkbox"
   | { type: "select"; options: string[] }
   | { type: "truckTypeSelect"; options: string[] }
   | { type: "carrierSelect"; options: { id: number; name: string }[] }
@@ -133,7 +134,7 @@ type InputTypes =
 
 // the structure for column definitions
 export interface ColumnDef {
-  key: keyof SearchRateType;
+  key: keyof SearchRateType | keyof CarrierData | keyof TruckData | keyof DriverData | keyof RateItem;
   type: InputTypes;
   label: string;
 }
