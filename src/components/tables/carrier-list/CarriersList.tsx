@@ -26,6 +26,7 @@ import AddTruckNdriver from "./AddTruckNdriver";
 import { CustomInput } from "@/components/chunks/CustomInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ExistingDrivers from "./ExistingDrivers";
+import { useAuth } from "@/hooks/useAuth";
 // import ExistingDrivers from "./ExistingDrivers";
 // import { debounce } from "lodash";
 
@@ -47,7 +48,9 @@ interface TableProps {
 // Define the TableCarriers component to render the table
 function CarriersList({ data }: TableProps) {
   const router = useRouter();
-  const [user, setUser] = useState<UserData | null>(null);
+  const { user } = useAuth() as { user: UserData | null };
+  console.log("CarriersList user: ", user);
+  // const [user, setUser] = useState<UserData | null>(null);
   const [isAddNew, setIsAddNew] = useState<boolean>(false);
   const [isAddTruck, setIsAddTruck] = useState<number | undefined | string>(0);
   const [carrierTrucks, setCarrierTrucks] = useState<TruckData[]>([]);
@@ -71,12 +74,12 @@ function CarriersList({ data }: TableProps) {
     filterCarriers();
   }, [filterOption, data, user]);
 
-  useEffect(() => {
-    const storedUser = window.localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
+  // useEffect(() => {
+  //   const storedUser = window.localStorage.getItem("user");
+  //   if (storedUser) {
+  //     setUser(JSON.parse(storedUser));
+  //   }
+  // }, []);
 
   useEffect(() => {
     if (data && data.length > 0) {
@@ -84,7 +87,7 @@ function CarriersList({ data }: TableProps) {
     }
   }, [data]);
 
-  console.log("localData: ", localData);
+  // console.log("localData: ", localData);
 
   const handleRemoveCarrier = async (id: number | string | undefined) => {
     try {
@@ -103,7 +106,7 @@ function CarriersList({ data }: TableProps) {
       // const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers/${id}/details`);
       const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers/${id}/details`);
 
-      console.log("Trucks by carrier:", response.data);
+      // console.log("Trucks by carrier:", response.data);
 
       if (response.data) {
         setCarrierTrucks(response.data.trucks);
@@ -151,13 +154,13 @@ function CarriersList({ data }: TableProps) {
   );
 
   if (!localData || localData.length === 0) {
-    return <div>Loading...</div>;
+    return <div className="min-h-[90vh] flex justify-center items-center">Loading...</div>;
   }
 
   return (
     <>
       <Select onValueChange={(value) => setFilterOption(value)} defaultValue="all">
-        <SelectTrigger>
+        <SelectTrigger  className="w-48 ml-3 mb-3">
           <SelectValue placeholder="Filter carriers" />
         </SelectTrigger>
         <SelectContent>
@@ -245,7 +248,7 @@ function CarriersList({ data }: TableProps) {
           </TableRow>
         </TableBody>
       </Table>
-      {isAddNew && <AddCarrier setIsAddNew={setIsAddNew} user={user} updatedColumnDefinitions={updatedColumnDefinitions} />}
+      {isAddNew  && <AddCarrier setIsAddNew={setIsAddNew} user={user} updatedColumnDefinitions={updatedColumnDefinitions} />}
     </>
   );
 }

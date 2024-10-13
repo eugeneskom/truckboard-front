@@ -6,15 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { debounce } from "lodash";
-// import { Calendar } from "@/components/ui/calendar";
-// import format from "date-fns/format";
-// import { parsePhoneNumber, AsYouType } from "libphonenumber-js";
-// import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-// import { CalendarIcon } from "lucide-react";
-// import TruckDimsInput from "@/components/chunks/TruckDimsInput";
-import { ColumnDef, SearchRateType } from "@/types";
+import { ColumnDef, SearchRateType, UserData } from "@/types";
 import { useMemo } from "react";
 import {  CustomInput } from "@/components/chunks/CustomInput";
+import { useAuth } from "@/hooks/useAuth";
 
 //  Column definitions
 export const columnDefinitions: ColumnDef[] = [
@@ -32,25 +27,17 @@ export const columnDefinitions: ColumnDef[] = [
   { key: "min_rate", type: "number", label: "Min Rate" },
   { key: "round_to", type: "number", label: "Round To" },
   { key: "extra", type: "number", label: "Extra" },
-  // { key: "carrier_id", type: "readonly", label: "Carrier ID" },
   { key: "truck_dims", type: "truckDims", label: "Truck Dimensions" },
-  // { key: "dims", type: "truckDims", label: "Truck Dimensions" },
-  // { key: "company_name", type: "readonly", label: "Carrier Name" },
   { key: "late_pick_up", type: { type: "latePickupSelect", options: ["morning", "afternoon"] }, label: "Late Pickup" },
   { key: "home_city", type: "text", label: "Home City" },
   { key: "carrier_email", type: "email", label: "Carrier Email" },
   { key: "mc_number", type: "text", label: "MC Number" },
   { key: "company_name", type: "text", label: "Company Name" },
   { key: "company_phone", type: "phone", label: "Company Phone" },
-  // { key: "agent_id", type: "number", label: "Agent ID" },
   { key: "agent_name", type: "text", label: "Agent Name" },
-  // { key: "agent_email", type: "email", label: "Agent Email" },
-  // { key: "truck_id", type: "number", label: "Truck ID" },
   { key: "truck_type", type: { type: "truckTypeSelect", options: ["VH", "SB", "DD"] }, label: "Truck Type" },
-  // { key: "truck_dims", type: "text", label: "Truck Dimensions" },
   { key: "payload", type: "number", label: "Payload" },
   { key: "accessories", type: "text", label: "Accessories" },
-  // { key: "driver_id", type: { type: "driverSelect", options: [] }, label: "Driver" },
   { key: "driver_name", type: "text", label: "Driver Name" },
   { key: "driver_lastname", type: "text", label: "Driver Last Name" },
   { key: "driver_phone", type: "phone", label: "Driver Phone" },
@@ -64,6 +51,8 @@ interface AggregatedDataTableProps {
 }
 
 const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData }) => {
+  const { user } = useAuth() as { user: UserData | null };
+
   const [editingCell, setEditingCell] = useState<{ rowIndex: number; field: string } | null>(null);
   const [newSearchData, setNewSearchData] = useState<Partial<SearchRateType>>({});
   const [carriers, setCarriers] = useState<{ id: number; company_name: string }[]>([]);
@@ -71,6 +60,24 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
   const [localData, setLocalData] = useState<SearchRateType[]>([]);
   const [selectedCarrier, setSelectedCarrier] = useState<number | null>(null);
   const [updatedColumnDefinitions, setUpdatedColumnDefinitions] = useState(columnDefinitions);
+  const [filterOption, setFilterOption] = useState<string>("all");
+  console.log('AggregatedDataTable',data)
+  const filterCarriers = () => {
+    if (filterOption === "mine" && user?.id) {
+      setLocalData(localData.filter((search) => {
+        console.log('filterCarriers: ',search, search.agent_id, user.id)
+        return search.agent_id === user.id
+      }));
+    } else {
+      setLocalData(data); // Show all carriers if "All" is selected
+    }
+  };
+
+  // Trigger the filtering function when filterOption changes
+  useEffect(() => {
+    filterCarriers();
+  }, [filterOption, data, user]);
+
 
   useEffect(() => {
     const carrierOptions = carriers.map((carrier) => ({ id: carrier.id, name: carrier.company_name }));
@@ -203,6 +210,7 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
   };
 
   const handleNewSearch = async () => {
+    // const params = {...newSearchData, agent_id: user?.id}
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/searches`, newSearchData);
       const updatedData = [...localData, response.data];
@@ -216,8 +224,19 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
     }
   };
 
+  console.log('newSearchData',newSearchData)
+
   return (
     <>
+      <Select onValueChange={(value) => setFilterOption(value)} defaultValue="all">
+        <SelectTrigger  className="w-48 ml-3 mb-3">
+          <SelectValue placeholder="Filter carriers" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All</SelectItem>
+          <SelectItem value="mine">Mine</SelectItem>
+        </SelectContent>
+      </Select>
       <Table>
         <TableCaption>Aggregated Search and Rate Data</TableCaption>
         <TableHeader>
