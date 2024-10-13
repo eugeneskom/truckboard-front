@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { debounce } from "lodash";
 import { ColumnDef, SearchRateType, UserData } from "@/types";
 import { useMemo } from "react";
-import {  CustomInput } from "@/components/chunks/CustomInput";
+import { CustomInput } from "@/components/chunks/CustomInput";
 import { useAuth } from "@/hooks/useAuth";
 
 //  Column definitions
@@ -61,13 +61,23 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
   const [selectedCarrier, setSelectedCarrier] = useState<number | null>(null);
   const [updatedColumnDefinitions, setUpdatedColumnDefinitions] = useState(columnDefinitions);
   const [filterOption, setFilterOption] = useState<string>("all");
-  console.log('AggregatedDataTable',data)
+  const [carrierSearch, setCarrierSearch] = useState("");
+  const [isCarrierDropdownOpen, setIsCarrierDropdownOpen] = useState(false);
+
+  const filteredCarriers = useMemo(() => {
+    if (!carrierSearch.trim()) return carriers;
+    return carriers.filter((carrier) => carrier.company_name.toLowerCase().includes(carrierSearch.toLowerCase()));
+  }, [carriers, carrierSearch]);
+
+  console.log("AggregatedDataTable", data);
   const filterCarriers = () => {
     if (filterOption === "mine" && user?.id) {
-      setLocalData(localData.filter((search) => {
-        console.log('filterCarriers: ',search, search.agent_id, user.id)
-        return search.agent_id === user.id
-      }));
+      setLocalData(
+        localData.filter((search) => {
+          console.log("filterCarriers: ", search, search.agent_id, user.id);
+          return search.agent_id === user.id;
+        })
+      );
     } else {
       setLocalData(data); // Show all carriers if "All" is selected
     }
@@ -77,7 +87,6 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
   useEffect(() => {
     filterCarriers();
   }, [filterOption, data, user]);
-
 
   useEffect(() => {
     const carrierOptions = carriers.map((carrier) => ({ id: carrier.id, name: carrier.company_name }));
@@ -166,7 +175,6 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
     [localData, debouncedUpdate]
   );
 
-
   const handleDelete = async (searchNumber: number) => {
     try {
       await axios.delete(`${process.env.NEXT_PUBLIC_SERVER_URL}api/searches/${searchNumber}`);
@@ -198,11 +206,12 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
     }
   };
 
-  const handleCarrierChange = (value: string) => {
-    const carrierId = parseInt(value);
-    setSelectedCarrier(carrierId);
-    setNewSearchData({ ...newSearchData, carrier_id: carrierId, driver_id: undefined });
-    fetchDrivers(carrierId);
+  const handleCarrierChange = (carrier: { id: number; company_name: string }) => {
+    setSelectedCarrier(carrier.id);
+    setNewSearchData({ ...newSearchData, carrier_id: carrier.id, driver_id: undefined });
+    fetchDrivers(carrier.id);
+    setCarrierSearch(carrier.company_name);
+    setIsCarrierDropdownOpen(false);
   };
 
   const handleDriverChange = (value: string) => {
@@ -224,12 +233,12 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
     }
   };
 
-  console.log('newSearchData',newSearchData)
+  console.log("newSearchData", newSearchData);
 
   return (
     <>
       <Select onValueChange={(value) => setFilterOption(value)} defaultValue="all">
-        <SelectTrigger  className="w-48 ml-3 mb-3">
+        <SelectTrigger className="w-48 ml-3 mb-3">
           <SelectValue placeholder="Filter carriers" />
         </SelectTrigger>
         <SelectContent>
@@ -255,7 +264,7 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
                   <TableCell key={columnDef.key}>
                     <CustomInput
                       columnDef={columnDef}
-                      value={row[(columnDef.key as keyof SearchRateType)]}
+                      value={row[columnDef.key as keyof SearchRateType]}
                       onChange={(value) => handleUpdate(rowIndex, columnDef.key, value)}
                       onFocus={() => setEditingCell({ rowIndex, field: columnDef.key })}
                       onBlur={() => setEditingCell(null)}
@@ -284,18 +293,22 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
           <DialogHeader>
             <DialogTitle>Create New Search</DialogTitle>
           </DialogHeader>
-          <Select onValueChange={handleCarrierChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a carrier" />
-            </SelectTrigger>
-            <SelectContent>
-              {carriers.map((carrier) => (
-                <SelectItem key={carrier.id} value={carrier.id.toString()}>
-                  {carrier.company_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="relative">
+            <Input placeholder="Search for a carrier" 
+            value={carrierSearch} onChange={(e) => 
+            setCarrierSearch(e.target.value)} 
+            onFocus={() => setIsCarrierDropdownOpen(true)} 
+            onBlur={() => setTimeout(() => setIsCarrierDropdownOpen(false), 200)} />
+            {isCarrierDropdownOpen && (
+              <div className="absolute z-10 w-full bg-white border border-gray-300 mt-1 max-h-60 overflow-auto">
+                {filteredCarriers.map((carrier) => (
+                  <div key={carrier.id} className="p-2 hover:bg-gray-100 cursor-pointer" onMouseDown={() => handleCarrierChange(carrier)}>
+                    {carrier.company_name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <Select onValueChange={handleDriverChange} disabled={!selectedCarrier}>
             <SelectTrigger>
               <SelectValue placeholder={selectedCarrier ? "Select a driver" : "Select a carrier first"} />
