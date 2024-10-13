@@ -123,7 +123,6 @@ function AddTruckNdriver({ setIsAddTruck, item, carriersDrivers, carrierTrucks }
   };
 
   return (
-    <>
       <TableRow>
         <TableCell colSpan={3}>
           <form
@@ -133,7 +132,7 @@ function AddTruckNdriver({ setIsAddTruck, item, carriersDrivers, carrierTrucks }
                 handleAddTruck(item.id);
               }
             }}
-            className="flex flex-col items-center gap-3"
+            className="flex flex-col items-center gap-3 ml-5"
           >
             <h2 className="text-center mb-3">Add Truck information</h2>
             <Select onValueChange={(value: TruckType) => setTruckData((prevData) => ({ ...prevData, type: value }))} value={truckData.type}>
@@ -145,55 +144,49 @@ function AddTruckNdriver({ setIsAddTruck, item, carriersDrivers, carrierTrucks }
                 <SelectItem value="SB">SB</SelectItem>
               </SelectContent>
             </Select>
-              <TruckDimsInput value={truckData.dims} onChange={(value) => setTruckData({ ...truckData, dims: value })} />
-              {/* <span>Payload:</span> */}
-              <Input placeholder="Payload" type="number" value={truckData.payload ?? 0} onChange={(e) => setTruckData({ ...truckData, payload: parseInt(e.target.value) })} />
+            <TruckDimsInput value={truckData.dims} onChange={(value) => setTruckData({ ...truckData, dims: value })} />
+            {/* <span>Payload:</span> */}
+            <Input placeholder="Payload" type="number" value={truckData.payload ?? 0} onChange={(e) => setTruckData({ ...truckData, payload: parseInt(e.target.value) })} />
             <Input placeholder="Accessories" type="text" value={truckData.accessories ?? ""} onChange={(e) => setTruckData({ ...truckData, accessories: e.target.value })} />
             <br />
             <Button type="submit">Add Truck</Button>
           </form>
         </TableCell>
         <TableCell colSpan={3}>
-          <Input placeholder="Driver Name" type="text" value={driverData.name ?? ""} onChange={(e) => setDriverData({ ...driverData, name: e.target.value })} />
-          <Input placeholder="Last Name" type="text" value={driverData.lastname ?? ""} onChange={(e) => setDriverData({ ...driverData, lastname: e.target.value })} />
-          <Input type="tel" value={displayValue} onChange={(e) => handlePhoneChange(e.target.value)} placeholder="(123) 456-7890" />
-          <Input placeholder="Email" type="email" value={driverData.email ?? ""} onChange={(e) => setDriverData({ ...driverData, email: e.target.value })} />
-          <Input placeholder="Perks" type="text" value={driverData.perks ?? ""} onChange={(e) => setDriverData({ ...driverData, perks: e.target.value })} />
-          <Select onValueChange={(truckId) => setDriverData({ ...driverData, truck_id: Number(truckId) })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a truck" />
-            </SelectTrigger>
-            <SelectContent>
-              {carrierTrucks
-                .filter((truck) => !carriersDrivers.find((driver) => driver.truck_id === truck.id))
-                .map((truck) => {
-                  console.log("carrierTrucksMap: ", truck);
-                  return truck;
-                })
-                .map((truck) => (
-                  <SelectItem key={truck.id} value={String(truck.id)}>
-                    {truck.type} (Payload : {truck.payload})
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-          <Button
-            onClick={() => {
-              handleAddTruckNdriver(item.id);
-            }}
-          >
-            Add Driver
-          </Button>
+          <form className="flex flex-col gap-3 items-center">
+            <Input placeholder="Driver Name" type="text" value={driverData.name ?? ""} onChange={(e) => setDriverData({ ...driverData, name: e.target.value })} />
+            <Input placeholder="Last Name" type="text" value={driverData.lastname ?? ""} onChange={(e) => setDriverData({ ...driverData, lastname: e.target.value })} />
+            <Input type="tel" value={displayValue} onChange={(e) => handlePhoneChange(e.target.value)} placeholder="(123) 456-7890" />
+            <Input placeholder="Email" type="email" value={driverData.email ?? ""} onChange={(e) => setDriverData({ ...driverData, email: e.target.value })} />
+            <Input placeholder="Perks" type="text" value={driverData.perks ?? ""} onChange={(e) => setDriverData({ ...driverData, perks: e.target.value })} />
+            <Select onValueChange={(truckId) => setDriverData({ ...driverData, truck_id: Number(truckId) })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a truck" />
+              </SelectTrigger>
+              <SelectContent>
+                {carrierTrucks
+                  .filter((truck) => !carriersDrivers.find((driver) => driver.truck_id === truck.id))
+                  .map((truck) => {
+                    console.log("carrierTrucksMap: ", truck);
+                    return truck;
+                  })
+                  .map((truck) => (
+                    <SelectItem key={truck.id} value={String(truck.id)}>
+                      {truck.type} (Payload : {truck.payload})
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={() => {
+                handleAddTruckNdriver(item.id);
+              }}
+            >
+              Add Driver
+            </Button>
+          </form>
         </TableCell>
       </TableRow>
-
-      {/* <TableRow>
-        <TableCell colSpan={12}>
-          <ExistingTrucks carrierTrucks={carrierTrucks} carriersDrivers={carriersDrivers} onUpdate={() => console.log("Updated carrier details")} />
-          <ExistingDrivers carriersDrivers={carriersDrivers} carrierTrucks={carrierTrucks} />
-        </TableCell>
-      </TableRow> */}
-    </>
   );
 }
 
