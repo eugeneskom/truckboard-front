@@ -4,6 +4,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import AddCarrier from "./AddCarrier";
 import { CarrierData, ColumnDef, DriverData, TruckData, UserData } from "@/types";
 import {
+  Fragment,
   useCallback,
   useEffect,
   // useMemo,
@@ -179,7 +180,7 @@ function CarriersList({ data }: TableProps) {
         <TableBody>
           {localData ? (
             localData.map((row: CarrierData, rowIndex: number) => (
-              <>
+              <Fragment key={row.id}>
                 <TableRow key={row.id}>
                   {updatedColumnDefinitions.map((columnDef) => (
                     <TableCell key={columnDef.key}>
@@ -210,7 +211,7 @@ function CarriersList({ data }: TableProps) {
                 </TableRow>
 
                 {isAddTruck === row.id && row.id != undefined && (
-                  <>
+                  <Fragment key={row.id}>
                     <AddTruckNdriver setIsAddTruck={setIsAddTruck} item={row} carriersDrivers={carriersDrivers} carrierTrucks={carrierTrucks} />
                     <TableRow>
                       <TableCell colSpan={6}>
@@ -220,9 +221,9 @@ function CarriersList({ data }: TableProps) {
                         <ExistingDrivers carriersDrivers={carriersDrivers} carrierTrucks={carrierTrucks} />
                       </TableCell>
                     </TableRow>
-                  </>
+                  </Fragment>
                 )}
-              </>
+              </Fragment>
             ))
           ) : (
             <TableRow>
