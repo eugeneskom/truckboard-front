@@ -93,7 +93,6 @@ export interface SearchRateType {
   agent_name: string;
   agent_email: string;
   // Truck fields
-  // truck_number: string;
   truck_id: number;
   truck_type: string;
   truck_dims: string;
@@ -137,4 +136,12 @@ export interface ColumnDef {
   key: keyof SearchRateType | keyof CarrierData | keyof TruckData | keyof DriverData | keyof RateItem;
   type: InputTypes;
   label: string;
+}
+
+
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
 }
