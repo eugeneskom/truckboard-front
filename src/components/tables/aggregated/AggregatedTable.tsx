@@ -236,7 +236,7 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
                   <TableCell key={columnDef.key}>
                     <CustomInput
                       columnDef={columnDef}
-                      value={row[columnDef.key]}
+                      value={row[(columnDef.key as keyof SearchRateType)]}
                       onChange={(value) => handleUpdate(rowIndex, columnDef.key, value)}
                       onFocus={() => setEditingCell({ rowIndex, field: columnDef.key })}
                       onBlur={() => setEditingCell(null)}
