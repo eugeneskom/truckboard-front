@@ -138,10 +138,12 @@ export interface ColumnDef {
   label: string;
 }
 
+export type Role = 'admin' | 'agent' | 'broker' | 'user';
 
 export interface User {
   id: number;
   username: string;
   email: string;
-  role: string;
+  role: Role;
 }
+

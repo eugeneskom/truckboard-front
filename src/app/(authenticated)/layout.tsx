@@ -1,5 +1,6 @@
 // src/app/(authenticated)/layout.tsx
 import { getServerSession } from '@/lib/auth';
+import { checkRoleAccess } from '@/lib/roleAccess';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 
@@ -15,9 +16,17 @@ export default async function AuthLayout({
 
   if (!session) {
     console.log('No session, redirecting to login');
-    redirect('/login');
+    return redirect('/login');
   }
 
-  console.log('Session valid, rendering children');
+  const pathname = headers().get('x-invoke-path') || '';
+  const hasAccess = checkRoleAccess(session.role, pathname);
+
+  if (!hasAccess) {
+    console.log('User does not have access to this route');
+    return redirect('/unauthorized'); // need to reate this page to handle unauthorized access
+  }
+
+  console.log('Session valid and user has access, rendering children');
   return <>{children}</>;
 }
