@@ -3,9 +3,12 @@
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import AddCarrier from "./AddCarrier";
 import { CarrierData, ColumnDef, DriverData, TruckData, UserData } from "@/types";
-import { useCallback, useEffect, 
-  // useMemo, 
-  useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  // useMemo,
+  useState,
+} from "react";
 import { Button } from "../../ui/button";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -21,6 +24,8 @@ import ExistingTrucks from "./ExistingTrucks";
 import AddTruckNdriver from "./AddTruckNdriver";
 import { CustomInput } from "@/components/chunks/CustomInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ExistingDrivers from "./ExistingDrivers";
+// import ExistingDrivers from "./ExistingDrivers";
 // import { debounce } from "lodash";
 
 export const columnDefinitions: ColumnDef[] = [
@@ -64,9 +69,6 @@ function CarriersList({ data }: TableProps) {
   useEffect(() => {
     filterCarriers();
   }, [filterOption, data, user]);
-  
-
-
 
   useEffect(() => {
     const storedUser = window.localStorage.getItem("user");
@@ -132,7 +134,7 @@ function CarriersList({ data }: TableProps) {
 
       const updatedRow = { ...row, ...updatedFields };
       setLocalData((prevData) => prevData.map((item, index) => (index === rowIndex ? updatedRow : item)));
-     
+
       try {
         const response = await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers/${row.id}`, updatedRow);
         if (response.status === 200) {
@@ -141,9 +143,8 @@ function CarriersList({ data }: TableProps) {
         }
       } catch (error) {
         console.error("Error updating data:", error);
-        setLocalData(prevData => [...prevData]);
+        setLocalData((prevData) => [...prevData]);
       }
-
     },
     [localData]
   );
@@ -199,7 +200,7 @@ function CarriersList({ data }: TableProps) {
                       />
                     </TableCell>
                   ))}
-                 
+
                   <TableCell>
                     <RemoveBtn onClick={() => handleRemoveCarrier(row.id)} />
                   </TableCell>
@@ -216,7 +217,7 @@ function CarriersList({ data }: TableProps) {
                         <ExistingTrucks carrierTrucks={carrierTrucks} carriersDrivers={carriersDrivers} onUpdate={() => console.log("Updated carrier details")} />
                       </TableCell>
                       <TableCell colSpan={6}>
-                        <ExistingTrucks carrierTrucks={carrierTrucks} carriersDrivers={carriersDrivers} onUpdate={() => console.log("Updated carrier details")} />
+                        <ExistingDrivers carriersDrivers={carriersDrivers} carrierTrucks={carrierTrucks} />
                       </TableCell>
                     </TableRow>
                   </>
@@ -243,7 +244,7 @@ function CarriersList({ data }: TableProps) {
           </TableRow>
         </TableBody>
       </Table>
-      {isAddNew && <AddCarrier setIsAddNew={setIsAddNew} user={user} updatedColumnDefinitions={updatedColumnDefinitions}/>}
+      {isAddNew && <AddCarrier setIsAddNew={setIsAddNew} user={user} updatedColumnDefinitions={updatedColumnDefinitions} />}
     </>
   );
 }
