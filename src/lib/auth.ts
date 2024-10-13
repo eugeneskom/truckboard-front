@@ -18,7 +18,7 @@ export async function getServerSession() {
 
     if (response.ok) {
       const data = await response.json();
-      return data.authenticated ? data.user : null;
+      return data.authenticated ? { user: data.user, role: data.user.role } : null;
     }
   } catch (error) {
     console.error('Server session check error:', error);

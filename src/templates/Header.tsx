@@ -2,8 +2,7 @@
 import Link from "next/link";
 import React from "react";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
-import { Button } from "@/components/ui/button";
-import { LogoutButton } from "@/components/LogoutButton";
+import { LogoutButton } from "@/components/buttons/LogoutButton";
 import { useAuth } from "@/hooks/useAuth";
 function Header() {
   const { user } = useAuth();

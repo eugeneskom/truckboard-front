@@ -1,16 +1,16 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
-import { User } from '@/types';
+// import { User } from '@/types';
 
-interface AuthStatusClientProps {
-  initialStatus: {
-    isAuthenticated: boolean;
-    user: User | null;
-  };
-}
-
-export function AuthStatusClient({ initialStatus }: AuthStatusClientProps) {
+// interface AuthStatusClientProps {
+//   initialStatus: {
+//     isAuthenticated: boolean;
+//     user: User | null;
+//   };
+// }
+// eslint-disable-next-line 
+export function AuthStatusClient({ initialStatus }: any) {
   console.log('initialStatus', initialStatus);
   const { user, loading } = useAuth();
 

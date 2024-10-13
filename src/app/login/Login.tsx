@@ -23,10 +23,12 @@ export default function Login() {
         { email, password },
         { withCredentials: true }
       );
-      console.log('Login response:', response.data);
+      console.log('Login response:', response.data.success);
 
       if (response.data.success) {
-        router.push('/dashboard');
+      console.log('Login response:', response.data.success);
+
+        router.push('/');
       } else {
         setError('Login failed. Please check your credentials.');
       }
