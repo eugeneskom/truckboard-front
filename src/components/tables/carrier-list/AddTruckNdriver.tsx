@@ -67,12 +67,15 @@ function AddTruckNdriver({ setIsAddTruck, item, carriersDrivers, carrierTrucks }
     truck_id: 0,
   });
 
+  console.log('driverData',driverData)
+
   const [displayValue, setDisplayValue] = useState(formatPhoneNumberForDisplay(driverData.phone || ""));
 
   const handlePhoneChange = (input: string) => {
     const digits = stripAndLimitPhoneNumber(input);
     const formattedNumber = formatPhoneNumberForDisplay(digits);
     setDisplayValue(formattedNumber);
+    setDriverData(prevData => ({ ...prevData, phone: digits }));
     // onChange(digits); // Store only digits in the state
   };
 
