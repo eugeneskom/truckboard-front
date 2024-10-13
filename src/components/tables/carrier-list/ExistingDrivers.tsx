@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import axios from "axios";
 import { DriverData, TruckData } from "@/types";
+import { Button } from "@/components/ui/button";
 
 interface ExistingDriversProps {
   carriersDrivers: DriverData[];
@@ -13,7 +14,7 @@ const ExistingDrivers: React.FC<ExistingDriversProps> = ({
    carriersDrivers, 
    carrierTrucks
    }) => {
-  // const [assigningDriver, setAssigningDriver] = useState<string | null>(null);
+  const [assigningDriver, setAssigningDriver] = useState<string | null>(null);
 
   console.log("carriersDrivers", carriersDrivers
     // ,carrierTrucks
@@ -21,7 +22,7 @@ const ExistingDrivers: React.FC<ExistingDriversProps> = ({
   const handleAssignDriver = async (driverId: string, truckId: string) => {
     try {
       await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/drivers/${driverId}`, { truck_id: truckId });
-      // setAssigningDriver(null);
+      setAssigningDriver(null);
       // onUpdate(); // Refresh data after assignment
     } catch (error) {
       console.error("Error assigning driver:", error);
@@ -62,7 +63,7 @@ const ExistingDrivers: React.FC<ExistingDriversProps> = ({
                 ) : (
                   <>
                   <p>Not assigned</p>
-                  {/* <Button onClick={() => setAssigningDriver(driver.id.toString())}>Assign Driver</Button>
+                  <Button onClick={() => setAssigningDriver(driver.id.toString())}>Assign Driver</Button>
                 {assigningDriver === driver.id.toString() && (
                   <Select onValueChange={(driverId) => handleAssignDriver(driverId, driver.id.toString())}>
                     <SelectTrigger>
@@ -78,7 +79,7 @@ const ExistingDrivers: React.FC<ExistingDriversProps> = ({
                         ))}
                     </SelectContent>
                   </Select>
-                )} */}
+                )}
                   </>
                 )}
               </TableCell>
@@ -106,7 +107,7 @@ const ExistingDrivers: React.FC<ExistingDriversProps> = ({
                   </SelectTrigger>
                   <SelectContent>
                     {carriersDrivers
-                      // .filter((driver) => !carriersDrivers.some((d) => d.truck_id === driver.id))
+                      .filter((driver) => !carriersDrivers.some((d) => d.truck_id === driver.id))
                       .map((driver) => (
                         <SelectItem key={driver.id} value={driver.id.toString()}>
                           {driver.name} - {driver.lastname}

@@ -18,7 +18,7 @@ import {  CustomInput } from "@/components/chunks/CustomInput";
 
 //  Column definitions
 export const columnDefinitions: ColumnDef[] = [
-  { key: "search_id", type: "number", label: "Search ID" },
+  { key: "search_id", type: "readonly", label: "Search ID" },
   { key: "pu_city", type: "text", label: "Pickup City" },
   { key: "destination", type: "text", label: "Destination" },
   { key: "pu_date_start", type: "date", label: "Pickup Start Date" },

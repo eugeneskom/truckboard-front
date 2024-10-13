@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TableCell, TableRow } from "@/components/ui/table";
 import React, { useState } from "react";
-import ExistingTrucks from "./ExistingTrucks";
-import ExistingDrivers from "./ExistingDrivers";
+// import ExistingTrucks from "./ExistingTrucks";
+// import ExistingDrivers from "./ExistingDrivers";
 import { CarrierData, DriverData, TruckData } from "@/types";
 import { useRouter } from "next/navigation";
 
@@ -187,12 +187,12 @@ function AddTruckNdriver({ setIsAddTruck, item, carriersDrivers, carrierTrucks }
         </TableCell>
       </TableRow>
 
-      <TableRow>
+      {/* <TableRow>
         <TableCell colSpan={12}>
           <ExistingTrucks carrierTrucks={carrierTrucks} carriersDrivers={carriersDrivers} onUpdate={() => console.log("Updated carrier details")} />
           <ExistingDrivers carriersDrivers={carriersDrivers} carrierTrucks={carrierTrucks} />
         </TableCell>
-      </TableRow>
+      </TableRow> */}
     </>
   );
 }
