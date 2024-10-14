@@ -1,71 +1,103 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useCallback, useState } from 'react';
 
 interface WebSocketContextType {
-  socket: WebSocket | null;
   sendMessage: (message: string) => void;
+  subscribeToMessages: (listener: (message: any) => void) => () => void;
+  lastMessage: any;
 }
 
-const WebSocketContext = createContext<WebSocketContextType>({ 
-  socket: null, 
-  sendMessage: () => {}
+const WebSocketContext = createContext<WebSocketContextType>({
+  sendMessage: () => {},
+  subscribeToMessages: () => () => {},
+  lastMessage: null,
 });
 
 export const useWebSocket = () => useContext(WebSocketContext);
 
 export const WebSocketProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
-  const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [reconnectAttempt, setReconnectAttempt] = useState(0);
+  const socketRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const messageListenersRef = useRef<Set<(message: any) => void>>(new Set());
+  const [lastMessage, setLastMessage] = useState<any>(null);
 
   const connectWebSocket = useCallback(() => {
+    if (socketRef.current?.readyState === WebSocket.OPEN) return;
+
     const ws = new WebSocket('ws://localhost:3001');
 
     ws.onopen = () => {
       console.log('Connected to WebSocket');
-      setReconnectAttempt(0);
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
     };
 
-    ws.onclose = (event) => {
-      console.log('WebSocket disconnected:', event.reason);
-      setSocket(null);
-      
-      // Attempt to reconnect with exponential backoff
-      const timeout = Math.min(1000 * 2 ** reconnectAttempt, 30000);
-      setTimeout(() => {
-        setReconnectAttempt(prev => prev + 1);
-        connectWebSocket();
-      }, timeout);
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      console.log('Received message:', message);
+      setLastMessage(message);
+      messageListenersRef.current.forEach(listener => listener(message));
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket connection closed');
+      socketRef.current = null;
+      reconnectTimeoutRef.current = setTimeout(connectWebSocket, 5000);
     };
 
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
     };
 
-    setSocket(ws);
-  }, [reconnectAttempt]);
+    socketRef.current = ws;
+  }, []);
 
   useEffect(() => {
     connectWebSocket();
 
     return () => {
-      if (socket) {
-        socket.close();
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
       }
     };
   }, [connectWebSocket]);
 
   const sendMessage = useCallback((message: string) => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(message);
+    if (socketRef.current?.readyState === WebSocket.OPEN) {
+      socketRef.current.send(message);
     } else {
       console.error('WebSocket is not connected');
     }
-  }, [socket]);
+  }, []);
+
+  const subscribeToMessages = useCallback((listener: (message: any) => void) => {
+    messageListenersRef.current.add(listener);
+    return () => {
+      messageListenersRef.current.delete(listener);
+    };
+  }, []);
+
+  const contextValue = {
+    sendMessage,
+    subscribeToMessages,
+    lastMessage,
+  };
 
   return (
-    <WebSocketContext.Provider value={{ socket, sendMessage }}>
+    <WebSocketContext.Provider value={contextValue}>
       {children}
     </WebSocketContext.Provider>
   );
+};
+
+// Hook to use in components
+export const useWebSocketMessages = () => {
+  const { lastMessage } = useContext(WebSocketContext);
+  return lastMessage;
 };
