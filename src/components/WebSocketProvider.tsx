@@ -4,7 +4,9 @@ import React, { createContext, useContext, useEffect, useRef, useCallback, useSt
 
 interface WebSocketContextType {
   sendMessage: (message: string) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   subscribeToMessages: (listener: (message: any) => void) => () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   lastMessage: any;
 }
 
@@ -19,7 +21,9 @@ export const useWebSocket = () => useContext(WebSocketContext);
 export const WebSocketProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const messageListenersRef = useRef<Set<(message: any) => void>>(new Set());
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [lastMessage, setLastMessage] = useState<any>(null);
 
   const connectWebSocket = useCallback(() => {
@@ -75,7 +79,8 @@ export const WebSocketProvider: React.FC<{children: React.ReactNode}> = ({ child
       console.error('WebSocket is not connected');
     }
   }, []);
-
+  
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const subscribeToMessages = useCallback((listener: (message: any) => void) => {
     messageListenersRef.current.add(listener);
     return () => {
