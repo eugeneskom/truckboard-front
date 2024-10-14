@@ -1,3 +1,4 @@
+// Code for the WebSocketProvider 
 'use client';
 
 import React from 'react';

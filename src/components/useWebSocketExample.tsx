@@ -1,3 +1,4 @@
+// Code for the WebSocketProvider component and the useWebSocket hook
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
