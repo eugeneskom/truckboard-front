@@ -6,9 +6,9 @@ import { Calendar } from "../ui/calendar";
 import { Input } from "../ui/input";
 import TruckDimsInput from "./TruckDimsInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import format from "date-fns/format";
 import { ColumnDef } from "@/types";
 import { Checkbox } from "../ui/checkbox";
+import { format, parseISO, startOfDay } from 'date-fns';
 
 interface CustomInputProps {
   columnDef: ColumnDef;
@@ -36,6 +36,12 @@ const stripAndLimitPhoneNumber = (input: string): string => {
 
   // Limit to 10 digits
   return digits.slice(0, 10);
+};
+
+const formatDate = (dateString: string | null) => {
+  if (!dateString) return '';
+  const date = parseISO(dateString);
+  return format(date, 'yyyy-MM-dd');
 };
 
 // Function to format phone number for display
@@ -67,24 +73,32 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
     case "date":
       return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
-          <PopoverTrigger asChild>
-            <div className={`w-full h-full min-h-[2.5rem] flex items-center justify-between px-3 py-2 border rounded-md cursor-pointer hover:bg-gray-100 ${MIDDLE_WIDTH_INPUT}`} onClick={() => setIsOpen(true)}>
-              {value ? <span>{format(new Date(value), "yyyy-MM-dd")}</span> : <span className="text-gray-400">Select date</span>}
-              <CalendarIcon className="h-4 w-4 opacity-50" />
-            </div>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={value ? new Date(value) : undefined}
-              onSelect={(date) => {
-                onChange(date?.toISOString() ?? null);
-                setIsOpen(false);
-              }}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
+        <PopoverTrigger asChild>
+          <div 
+            className={`w-full h-full min-h-[2.5rem] flex items-center justify-between px-3 py-2 border rounded-md cursor-pointer hover:bg-gray-100 ${MIDDLE_WIDTH_INPUT}`} 
+            onClick={() => setIsOpen(true)}
+          >
+            {value ? <span>{formatDate(value)}</span> : <span className="text-gray-400">Select date</span>}
+            <CalendarIcon className="h-4 w-4 opacity-50" />
+          </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={value ? parseISO(value) : undefined}
+            onSelect={(date) => {
+              if (date) {
+                const localDate = startOfDay(date);
+                onChange(format(localDate, "yyyy-MM-dd"));
+              } else {
+                onChange(null);
+              }
+              setIsOpen(false);
+            }}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
       );
     case "email":
       return (

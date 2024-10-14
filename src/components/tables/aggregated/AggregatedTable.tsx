@@ -69,7 +69,7 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
     return carriers.filter((carrier) => carrier.company_name.toLowerCase().includes(carrierSearch.toLowerCase()));
   }, [carriers, carrierSearch]);
 
-  console.log("AggregatedDataTable", data);
+  // console.log("AggregatedDataTable", data);
   const filterCarriers = () => {
     if (filterOption === "mine" && user?.id) {
       setLocalData(
@@ -233,7 +233,7 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
     }
   };
 
-  console.log("newSearchData", newSearchData);
+  // console.log("newSearchData", newSearchData);
 
   return (
     <>

@@ -26,38 +26,40 @@ export const WebSocketProvider: React.FC<{children: React.ReactNode}> = ({ child
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [lastMessage, setLastMessage] = useState<any>(null);
 
-  const connectWebSocket = useCallback(() => {
-    if (socketRef.current?.readyState === WebSocket.OPEN) return;
+// In your WebSocketProvider.tsx
 
-    const ws = new WebSocket('ws://localhost:3001');
+const connectWebSocket = useCallback(() => {
+  if (socketRef.current?.readyState === WebSocket.OPEN) return;
+  const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3002';
+  const ws = new WebSocket(WS_URL); 
 
-    ws.onopen = () => {
-      console.log('Connected to WebSocket');
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
-      }
-    };
+  ws.onopen = () => {
+    console.log('Connected to WebSocket');
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+  };
 
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      console.log('Received message:', message);
-      setLastMessage(message);
-      messageListenersRef.current.forEach(listener => listener(message));
-    };
+  ws.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+    console.log('Received message:', message);
+    setLastMessage(message);
+    messageListenersRef.current.forEach(listener => listener(message));
+  };
 
-    ws.onclose = () => {
-      console.log('WebSocket connection closed');
-      socketRef.current = null;
-      reconnectTimeoutRef.current = setTimeout(connectWebSocket, 5000);
-    };
+  ws.onclose = (event) => {
+    console.log('WebSocket connection closed', event.code, event.reason);
+    socketRef.current = null;
+    reconnectTimeoutRef.current = setTimeout(connectWebSocket, 5000);
+  };
 
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+  ws.onerror = (error) => {
+    console.error('WebSocket error:', error);
+  };
 
-    socketRef.current = ws;
-  }, []);
+  socketRef.current = ws;
+}, []);
 
   useEffect(() => {
     connectWebSocket();
