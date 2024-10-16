@@ -1,26 +1,35 @@
-"use client";
 import React, { useState, useEffect, useRef } from "react";
 import { Table, TableCaption, TableCell, TableHead, TableHeader, TableRow, TableBody } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { TruckData } from "@/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { splitDimensions } from "@/lib/utils";
 
-interface TruckDataForm extends Omit<TruckData, "accessories"> {
-  accessories: string | string[];
-}
+// Update the TruckData type to match your component's needs
+export type TruckData = {
+  id: number;
+  truck_number: number;
+  carrier_number: number;
+  truck_type: "VH" | "SB";
+  truck_dims: string;
+  payload: number;
+  accessories: string;
+  driver_number: number;
+  Driver_name: string;
+};
+
+// Create a separate type for the form state
+type TruckDataForm = Omit<TruckData, 'id'>;
 
 const initialTruckData: TruckDataForm = {
-  id: 0,
   truck_number: 0,
   carrier_number: 0,
   truck_type: "VH",
   truck_dims: "",
   payload: 0,
-  accessories: "", // Start with an empty string
+  accessories: "",
   driver_number: 0,
   Driver_name: "",
 };
@@ -31,25 +40,22 @@ type TruckListAddNewProps = {
 
 function TruckListAddNew({ setIsAddNew }: TruckListAddNewProps) {
   const router = useRouter();
-  const [newTruck, setNewTruck] = useState<TruckData>(initialTruckData);
+  const [newTruck, setNewTruck] = useState<TruckDataForm>(initialTruckData);
   const componentRef = useRef<HTMLDivElement>(null);
 
-  const handleInputChange = (key: keyof TruckDataForm, value: string | number | string[]) => {
+  const handleInputChange = (key: keyof TruckDataForm, value: string | number) => {
     setNewTruck((prevState) => ({
       ...prevState,
-      [key]: key === "truck_type" ? (value as "VH" | "SB") : key === "truck_number" || key === "carrier_number" || key === "driver_number" || key === "payload" ? Number(value) : key === "accessories" && Array.isArray(value) ? value.join(", ") : value,
+      [key]: key === "truck_type" ? (value as "VH" | "SB") : 
+             (key === "truck_number" || key === "carrier_number" || key === "driver_number" || key === "payload") ? Number(value) : 
+             value,
     }));
   };
 
   const handleAddNewTruck = async () => {
     console.log("Adding new truck:", newTruck);
     try {
-      // Handle accessories whether it's a string or an array
-      const truckToSend = {
-        ...newTruck,
-        accessories: Array.isArray(newTruck.accessories) ? newTruck.accessories.join(", ") : newTruck.accessories,
-      };
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/truck-list`, truckToSend);
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/truck-list`, newTruck);
       console.log("New truck added:", response.data);
       setNewTruck(initialTruckData);
       setIsAddNew(false);
@@ -66,32 +72,11 @@ function TruckListAddNew({ setIsAddNew }: TruckListAddNewProps) {
   }, []);
 
   const allAccessories = [
-    "E-track",
-    "Liftgate",
-    "Straps",
-    "Blankets",
-    "Ramps",
-    "Pallet Jack",
-    "Load Bars",
-    "Chains",
-    "Tarps",
-    "Dunnage",
-    "Corner Protectors",
-    "Winch",
-    "Load Lock",
-    "Rope",
-    "Bungee Cords",
-    "Cargo Net",
-    "Dock Plates",
-    "Wheel Chocks",
-    "Hand Truck",
-    "Dolly",
-    "Forklift",
-    "Pallet",
-    "Shrink Wrap",
-    "Moving Blankets",
-    "Tie Downs",
-    "Cargo Bars",
+    "E-track", "Liftgate", "Straps", "Blankets", "Ramps", "Pallet Jack",
+    "Load Bars", "Chains", "Tarps", "Dunnage", "Corner Protectors", "Winch",
+    "Load Lock", "Rope", "Bungee Cords", "Cargo Net", "Dock Plates",
+    "Wheel Chocks", "Hand Truck", "Dolly", "Forklift", "Pallet",
+    "Shrink Wrap", "Moving Blankets", "Tie Downs", "Cargo Bars",
     "Refrigeration Unit",
   ];
 
@@ -120,7 +105,7 @@ function TruckListAddNew({ setIsAddNew }: TruckListAddNewProps) {
               <input type="number" value={newTruck.carrier_number || ""} onChange={(e) => handleInputChange("carrier_number", e.target.value)} className="w-full p-1 border rounded" />
             </TableCell>
             <TableCell>
-              <Select value={newTruck.truck_type} onValueChange={(value) => handleInputChange("truck_type", value as "VH" | "SB")}>
+              <Select value={newTruck.truck_type} onValueChange={(value: "VH" | "SB") => handleInputChange("truck_type", value)}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select truck type" />
                 </SelectTrigger>
@@ -130,7 +115,6 @@ function TruckListAddNew({ setIsAddNew }: TruckListAddNewProps) {
                 </SelectContent>
               </Select>
             </TableCell>
-
             <TableCell>
               <div className="flex space-x-1">
                 <input
