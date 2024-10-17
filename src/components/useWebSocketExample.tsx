@@ -24,7 +24,9 @@ export const WebSocketProvider: React.FC<{children: React.ReactNode}> = ({ child
   const [lastMessage, setLastMessage] = useState<any>(null);  
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:3001');
+  const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3002';
+
+    const ws = new WebSocket(WS_URL);
 
     ws.onopen = () => {
       console.log('Connected to WebSocket');
