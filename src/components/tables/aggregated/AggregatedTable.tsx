@@ -2,14 +2,15 @@ import React, { useState, useCallback, useEffect } from "react";
 import axios from "axios";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+// import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+// import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { debounce } from "lodash";
 import { ColumnDef, SearchRateType, UserData } from "@/types";
 import { useMemo } from "react";
 import { CustomInput } from "@/components/chunks/CustomInput";
 import { useAuth } from "@/hooks/useAuth";
+import AddSearch from "./AddSearch";
 
 //  Column definitions
 export const columnDefinitions: ColumnDef[] = [
@@ -57,26 +58,18 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
   const { user } = useAuth() as { user: UserData | null };
 
   const [editingCell, setEditingCell] = useState<{ rowIndex: number; field: string } | null>(null);
-  const [newSearchData, setNewSearchData] = useState<Partial<SearchRateType>>({});
+  const [updatedColumnDefinitions, setUpdatedColumnDefinitions] = useState(columnDefinitions);
+
+  const [localData, setLocalData] = useState<SearchRateType[]>([]);
+  const [filterOption, setFilterOption] = useState<string>("all");
   const [carriers, setCarriers] = useState<{ id: number; company_name: string }[]>([]);
   const [drivers, setDrivers] = useState<{ id: number; name: string; lastname: string }[]>([]);
-  const [localData, setLocalData] = useState<SearchRateType[]>([]);
-  const [selectedCarrier, setSelectedCarrier] = useState<number | null>(null);
-  const [updatedColumnDefinitions, setUpdatedColumnDefinitions] = useState(columnDefinitions);
-  const [filterOption, setFilterOption] = useState<string>("all");
-  const [carrierSearch, setCarrierSearch] = useState("");
-  const [isCarrierDropdownOpen, setIsCarrierDropdownOpen] = useState(false);
-
-  const filteredCarriers = useMemo(() => {
-    if (!carrierSearch.trim()) return carriers;
-    return carriers.filter((carrier) => carrier.company_name.toLowerCase().includes(carrierSearch.toLowerCase()));
-  }, [carriers, carrierSearch]);
 
   // console.log("AggregatedDataTable", data);
   const filterCarriers = () => {
     if (filterOption === "mine" && user?.id) {
       setLocalData(
-        localData.filter((search) => {
+        data.filter((search) => {
           console.log("filterCarriers: ", search, search.agent_id, user.id);
           return search.agent_id === user.id;
         })
@@ -90,23 +83,6 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
   useEffect(() => {
     filterCarriers();
   }, [filterOption, data, user]);
-
-  useEffect(() => {
-    const carrierOptions = carriers.map((carrier) => ({ id: carrier.id, name: carrier.company_name }));
-    const driverOptions = drivers.map((driver) => ({ id: driver.id, name: `${driver.name} ${driver.lastname}` }));
-
-    setUpdatedColumnDefinitions(
-      columnDefinitions.map((col) => {
-        if (col.key === "carrier_id" && typeof col.type === "object" && col.type.type === "carrierSelect") {
-          return { ...col, type: { ...col.type, options: carrierOptions } };
-        }
-        if (col.key === "driver_id" && typeof col.type === "object" && col.type.type === "driverSelect") {
-          return { ...col, type: { ...col.type, options: driverOptions } };
-        }
-        return col;
-      })
-    );
-  }, [carriers, drivers]);
 
   useEffect(() => {
     // console.log("AggregatedDataTable data: ", data);
@@ -145,10 +121,10 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
       if (["posting", "dat_posting", "call_driver", "pu_city", "destination", "late_pick_up", "pu_date_start", "pu_date_end", "del_date_start", "del_date_end", "carrier_id", "truck_id", "driver_id"].includes(field)) {
         table = "searches";
         id = row.search_id;
-        console.log("searches", value)
-        if(field === "pu_date_start" || field === "pu_date_end" || field === "del_date_start" || field === "del_date_end"){
+        console.log("searches", value);
+        if (field === "pu_date_start" || field === "pu_date_end" || field === "del_date_start" || field === "del_date_end") {
           value = value !== "" ? value.split("T")[0] : null;
-        }else{
+        } else {
           // value = value !== "" ? value;
         }
       } else if (["dead_head", "min_miles", "max_miles", "rpm", "min_rate", "round_to", "extra"].includes(field)) {
@@ -178,14 +154,14 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
 
       // setLocalData((prevData) => prevData.map((item, index) => (index === rowIndex ? { ...item, [field]: value } : item)));
       setLocalData((prevData) => {
-        const start = performance.now();  // Recording the start time
-      
-        const updatedData = [...prevData]; 
+        const start = performance.now(); // Recording the start time
+
+        const updatedData = [...prevData];
         updatedData[rowIndex] = { ...updatedData[rowIndex], [field]: value };
-      
-        const end = performance.now();  // Recording the end time
+
+        const end = performance.now(); // Recording the end time
         console.log(`Time taken for setLocalData update: ${(end - start).toFixed(2)}ms`);
-      
+
         return updatedData;
       });
       debouncedUpdate(table, id, field, value);
@@ -204,52 +180,22 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
     }
   };
 
-  const fetchCarriers = async () => {
-    try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers`);
-      setCarriers(response.data);
-    } catch (error) {
-      console.error("Error fetching carriers:", error);
-    }
-  };
+  useEffect(() => {
+    const carrierOptions = carriers.map((carrier) => ({ id: carrier.id, name: carrier.company_name }));
+    const driverOptions = drivers.map((driver) => ({ id: driver.id, name: `${driver.name} ${driver.lastname}` }));
 
-  const fetchDrivers = async (carrierId: number) => {
-    try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}api/drivers`, {
-        params: { carrierId },
-      });
-      setDrivers(response.data);
-    } catch (error) {
-      console.error("Error fetching drivers:", error);
-    }
-  };
-
-  const handleCarrierChange = (carrier: { id: number; company_name: string }) => {
-    setSelectedCarrier(carrier.id);
-    setNewSearchData({ ...newSearchData, carrier_id: carrier.id, driver_id: undefined });
-    fetchDrivers(carrier.id);
-    setCarrierSearch(carrier.company_name);
-    setIsCarrierDropdownOpen(false);
-  };
-
-  const handleDriverChange = (value: string) => {
-    setNewSearchData({ ...newSearchData, driver_id: parseInt(value) });
-  };
-
-  const handleNewSearch = async () => {
-    // const params = {...newSearchData, agent_id: user?.id}
-    try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/searches`, newSearchData);
-      const updatedData = [...localData, response.data];
-      setLocalData(updatedData);
-      setData(updatedData);
-      setNewSearchData({});
-      setSelectedCarrier(null);
-      setDrivers([]);
-    } catch (error) {
-      console.error("Error creating new search:", error);
-    }
-  };
+    setUpdatedColumnDefinitions(
+      columnDefinitions.map((col) => {
+        if (col.key === "carrier_id" && typeof col.type === "object" && col.type.type === "carrierSelect") {
+          return { ...col, type: { ...col.type, options: carrierOptions } };
+        }
+        if (col.key === "driver_id" && typeof col.type === "object" && col.type.type === "driverSelect") {
+          return { ...col, type: { ...col.type, options: driverOptions } };
+        }
+        return col;
+      })
+    );
+  }, [carriers, drivers]);
 
   // console.log("newSearchData", newSearchData);
 
@@ -302,46 +248,7 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
           )}
         </TableBody>
       </Table>
-
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button onClick={fetchCarriers}>New Search</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Search</DialogTitle>
-          </DialogHeader>
-          <div className="relative">
-            <Input placeholder="Search for a carrier" 
-            value={carrierSearch} onChange={(e) => 
-            setCarrierSearch(e.target.value)} 
-            onFocus={() => setIsCarrierDropdownOpen(true)} 
-            onBlur={() => setTimeout(() => setIsCarrierDropdownOpen(false), 200)} />
-            {isCarrierDropdownOpen && (
-              <div className="absolute z-10 w-full bg-white border border-gray-300 mt-1 max-h-60 overflow-auto">
-                {filteredCarriers.map((carrier) => (
-                  <div key={carrier.id} className="p-2 hover:bg-gray-100 cursor-pointer" onMouseDown={() => handleCarrierChange(carrier)}>
-                    {carrier.company_name}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <Select onValueChange={handleDriverChange} disabled={!selectedCarrier}>
-            <SelectTrigger>
-              <SelectValue placeholder={selectedCarrier ? "Select a driver" : "Select a carrier first"} />
-            </SelectTrigger>
-            <SelectContent>
-              {drivers.map((driver) => (
-                <SelectItem key={driver.id} value={driver.id.toString()}>{`${driver.name} ${driver.lastname}`}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Input placeholder="Pickup City" onChange={(e) => setNewSearchData({ ...newSearchData, pu_city: e.target.value })} />
-          <Input placeholder="Destination" onChange={(e) => setNewSearchData({ ...newSearchData, destination: e.target.value })} />
-          <Button onClick={handleNewSearch}>Create Search</Button>
-        </DialogContent>
-      </Dialog>
+      <AddSearch setLocalData={setLocalData} setCarriers={setCarriers} setDrivers={setDrivers} drivers={drivers} carriers={carriers} localData={localData}/>
     </>
   );
 };
