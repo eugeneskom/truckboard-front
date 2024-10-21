@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 // import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { debounce } from "lodash";
-import { ColumnDef, SearchRateType, UserData } from "@/types";
+import { ColumnDef, SearchRateType, UserData, UserSettings } from "@/types";
 import { useMemo } from "react";
 import { CustomInput } from "@/components/chunks/CustomInput";
 import { useAuth } from "@/hooks/useAuth";
@@ -61,28 +61,27 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
   const [updatedColumnDefinitions, setUpdatedColumnDefinitions] = useState(columnDefinitions);
 
   const [localData, setLocalData] = useState<SearchRateType[]>([]);
-  const [filterOption, setFilterOption] = useState<string>("all");
+  const [filterOption, setFilterOption] = useState<UserSettings['searchMine']>("all");
+
   const [carriers, setCarriers] = useState<{ id: number; company_name: string }[]>([]);
   const [drivers, setDrivers] = useState<{ id: number; name: string; lastname: string }[]>([]);
 
   // console.log("AggregatedDataTable", data);
   const filterCarriers = () => {
     if (filterOption === "mine" && user?.id) {
-      setLocalData(
-        data.filter((search) => {
-          console.log("filterCarriers: ", search, search.agent_id, user.id);
-          return search.agent_id === user.id;
-        })
-      );
+      setLocalData(data.filter((search) => search.agent_id === user.id));
     } else {
-      setLocalData(data); // Show all carriers if "All" is selected
+      setLocalData(data);
     }
-  };
+  }
+
+
+  console.log('filterOption',filterOption)
 
   // Trigger the filtering function when filterOption changes
   useEffect(() => {
     filterCarriers();
-  }, [filterOption, data, user]);
+  }, [filterOption, user]);
 
   useEffect(() => {
     // console.log("AggregatedDataTable data: ", data);
@@ -197,11 +196,34 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
     );
   }, [carriers, drivers]);
 
+
+  useEffect(() => {
+    const savedSettings = localStorage.getItem("userSettings");
+    if (savedSettings) {
+      try {
+        const parsedSettings: UserSettings = JSON.parse(savedSettings);
+        setFilterOption(parsedSettings.searchMine);
+      } catch (error) {
+        console.error("Error parsing user settings:", error);
+      }
+    }
+  }, []);
+
   // console.log("newSearchData", newSearchData);
+
+  const handleFilterChange = (value: UserSettings['searchMine']) => {
+    setFilterOption(value);
+    const updatedSettings: UserSettings = { searchMine: value };
+    localStorage.setItem("userSettings", JSON.stringify(updatedSettings));
+  };
+
 
   return (
     <>
-      <Select onValueChange={(value) => setFilterOption(value)} defaultValue="all">
+      <Select
+        onValueChange={handleFilterChange}
+        defaultValue="all"
+      >
         <SelectTrigger className="w-48 ml-3 mb-3">
           <SelectValue placeholder="Filter carriers" />
         </SelectTrigger>
@@ -248,7 +270,7 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
           )}
         </TableBody>
       </Table>
-      <AddSearch setLocalData={setLocalData} setCarriers={setCarriers} setDrivers={setDrivers} drivers={drivers} carriers={carriers} localData={localData}/>
+      <AddSearch setLocalData={setLocalData} setCarriers={setCarriers} setDrivers={setDrivers} drivers={drivers} carriers={carriers} localData={localData} />
     </>
   );
 };

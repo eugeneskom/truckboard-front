@@ -161,3 +161,8 @@ export interface UsCity {
   city_alias: string;
   zip_codes: string;
 }
+
+
+export interface UserSettings {
+  searchMine: "all" | "mine";
+}
