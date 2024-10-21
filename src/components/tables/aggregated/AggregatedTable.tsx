@@ -114,8 +114,8 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
     // eslint-disable-next-line
     async (table: string, id: number, field: string, value: any) => {
       try {
+        // setData((prevData) => prevData.map((item) => (item.search_id === id ? { ...item, [field]: value } : item)));
         await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}api/update-data`, { table, id, field, value });
-        setData((prevData) => prevData.map((item) => (item.search_id === id ? { ...item, [field]: value } : item)));
       } catch (error) {
         console.error("Error updating data:", error);
       }
@@ -168,8 +168,12 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
         return;
       }
 
-      setLocalData((prevData) => prevData.map((item, index) => (index === rowIndex ? { ...item, [field]: value } : item)));
-
+      // setLocalData((prevData) => prevData.map((item, index) => (index === rowIndex ? { ...item, [field]: value } : item)));
+      setLocalData((prevData) => {
+        const updatedData = [...prevData]; 
+        updatedData[rowIndex] = { ...updatedData[rowIndex], [field]: value };
+        return updatedData;
+      });
       debouncedUpdate(table, id, field, value);
     },
     [localData, debouncedUpdate]

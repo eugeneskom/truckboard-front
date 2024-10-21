@@ -24,6 +24,9 @@ interface CustomInputProps {
 // const MIDDLE_WIDTH_INPUT = "min-w-[150px]";
 // const SMALL_WIDTH_INPUT = "min-w-[90px]";
 
+const WIDTH_XSS = "w-8"; // 32px
+const WIDTH_SM = "w-20"; // 80px
+
 // Function to strip non-digits and limit to 10 digits
 const stripAndLimitPhoneNumber = (input: string): string => {
   // Remove all non-digit characters
@@ -70,7 +73,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
   switch (columnDef.type) {
     case "readonly":
       // ${MIDDLE_WIDTH_INPUT} 
-      return <div className={`
+      return <div className={`${columnDef.label === ""}
         p-2 bg-gray-100 rounded`}>{value ?? ""}</div>;
     case "date":
       return (
@@ -78,7 +81,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
         <PopoverTrigger asChild>
           <div 
               //  ${MIDDLE_WIDTH_INPUT}
-            className={` h-full min-h-[2.5rem] flex items-center justify-between px-3 py-2 border rounded-md cursor-pointer hover:bg-gray-100
+            className={`${WIDTH_SM} h-full min-h-[2.5rem] flex items-center justify-between py-1  cursor-pointer hover:bg-gray-100
                `} 
             onClick={() => setIsOpen(true)}
           >
@@ -107,16 +110,17 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
     case "email":
       return (
         <div 
-        // className={MIDDLE_WIDTH_INPUT}
+        className={`w-36`}
         >
-          <Input type="email" value={value ?? ""} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={`${className}  p-0 w-max`} />
+          <Input type="email" value={value ?? ""} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={`${className}`} />
         </div>
       );
     case "number":
+      const INPUT_WIDTH = columnDef.key === "dead_head" || "min_miles" || "max_miles" ? WIDTH_XSS : WIDTH_SM;
       return (
         <div 
         // className={SMALL_WIDTH_INPUT}
-        className="w-full"
+        className={INPUT_WIDTH}
         >
           <Input
             type="number"
@@ -134,7 +138,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
     case "phone":
       return (
         <div 
-        // className={MIDDLE_WIDTH_INPUT}
+        className={`w-28`}
         >
           <Input
             type="tel"
@@ -225,9 +229,19 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
             );
         }
       }
+
+      const WIDTH = columnDef.key === "mc_number" 
+      ? WIDTH_SM 
+      : columnDef.key === "pu_city" 
+      ? "w-24" 
+      : columnDef.key === "destination"
+      ? "w-80" 
+      : columnDef.key === "agent_name"
+      ? "w-16"
+      : "w-24";
       return (
         <div 
-        // className={SMALL_WIDTH_INPUT}
+        className={WIDTH}
         >
           <Input type="text" value={value ?? ""} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={className} />
         </div>

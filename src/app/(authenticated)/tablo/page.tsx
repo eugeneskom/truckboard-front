@@ -1,7 +1,7 @@
 "use client";
 
 import AggregatedDataTable from "@/components/tables/aggregated/AggregatedTable";
-import { useWebSocket, useWebSocketMessages } from "@/components/WebSocketProvider";
+import { useWebSocket, useWebSocketMessages } from "@/components/auth/socket/WebSocketProvider";
 import { SearchRateType } from "@/types";
 import { useEffect, useState, useCallback } from "react";
 

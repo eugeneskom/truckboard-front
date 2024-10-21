@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "react-datepicker/dist/react-datepicker.css";
 import Header from "@/templates/Header";
-import { ClientProviders } from "@/components/ClientProviders";
+import { ClientProviders } from "@/components/auth/socket/ClientProviders";
 
 export const metadata: Metadata = {
   title: "Remberg Truckboard",

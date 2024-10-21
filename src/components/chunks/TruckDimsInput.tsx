@@ -36,7 +36,7 @@ const TruckDimsInput: React.FC<TruckDimsInputProps> = ({ value, onChange, classN
         <Input
           key={label}
           className={`
-            min-w-[40px] 
+            min-w-[28px] 
             ${className}
             p-0
             text-center
@@ -45,6 +45,7 @@ const TruckDimsInput: React.FC<TruckDimsInputProps> = ({ value, onChange, classN
             [&::-webkit-inner-spin-button]:appearance-none
           `}
           type="text"
+          maxLength={3}
           inputMode="numeric"
           pattern="[0-9]*"
           value={dimensions[index]}
