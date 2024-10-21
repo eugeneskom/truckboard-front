@@ -61,17 +61,15 @@ function TabloPage() {
     };
   }, [subscribeToMessages]);
 
-  // React to lastMessage if needed
   useEffect(() => {
     if (lastMessage) {
       console.log('Last message received:', lastMessage);
-      // You can handle the last message here if needed
     }
   }, [lastMessage]);
 
   return (
     <div className="px-5">
-      <p>TabloPage #1</p>
+      <h1 className="mb-3 text-center font-bold">Truckboard</h1>
       <AggregatedDataTable data={data} setData={setData}/>
     </div>
   );

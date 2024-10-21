@@ -67,6 +67,9 @@ export interface RateItem {
 
 export interface SearchRateType {
   search_id: number;
+  posting: boolean;
+  dat_posting: boolean;
+  call_driver: boolean;
   pu_city: string;
   destination: string;
   late_pick_up: string;

@@ -14,6 +14,9 @@ import { useAuth } from "@/hooks/useAuth";
 //  Column definitions
 export const columnDefinitions: ColumnDef[] = [
   // { key: "search_id", type: "readonly", label: "Search ID" },
+  { key: "posting", type: "checkbox", label: "post" },
+  { key: "dat_posting", type: "checkbox", label: "DAT post" },
+  { key: "call_driver", type: "checkbox", label: "Call Driver" },
   { key: "pu_city", type: "text", label: "PU City" },
   { key: "destination", type: "text", label: "Destination" },
   { key: "pu_date_start", type: "date", label: "PU Start" },
@@ -139,10 +142,15 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
       let table: string;
       let id: number | undefined;
 
-      if (["pu_city", "destination", "late_pick_up", "pu_date_start", "pu_date_end", "del_date_start", "del_date_end", "carrier_id", "truck_id", "driver_id"].includes(field)) {
+      if (["posting", "dat_posting", "call_driver", "pu_city", "destination", "late_pick_up", "pu_date_start", "pu_date_end", "del_date_start", "del_date_end", "carrier_id", "truck_id", "driver_id"].includes(field)) {
         table = "searches";
         id = row.search_id;
-        value = value !== "" ? value.split("T")[0] : null;
+        console.log("searches", value)
+        if(field === "pu_date_start" || field === "pu_date_end" || field === "del_date_start" || field === "del_date_end"){
+          value = value !== "" ? value.split("T")[0] : null;
+        }else{
+          // value = value !== "" ? value;
+        }
       } else if (["dead_head", "min_miles", "max_miles", "rpm", "min_rate", "round_to", "extra"].includes(field)) {
         table = "rates";
         id = row.search_id;
@@ -170,8 +178,14 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
 
       // setLocalData((prevData) => prevData.map((item, index) => (index === rowIndex ? { ...item, [field]: value } : item)));
       setLocalData((prevData) => {
+        const start = performance.now();  // Recording the start time
+      
         const updatedData = [...prevData]; 
         updatedData[rowIndex] = { ...updatedData[rowIndex], [field]: value };
+      
+        const end = performance.now();  // Recording the end time
+        console.log(`Time taken for setLocalData update: ${(end - start).toFixed(2)}ms`);
+      
         return updatedData;
       });
       debouncedUpdate(table, id, field, value);
