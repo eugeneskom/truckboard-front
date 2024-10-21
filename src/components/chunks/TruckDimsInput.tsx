@@ -36,8 +36,10 @@ const TruckDimsInput: React.FC<TruckDimsInputProps> = ({ value, onChange, classN
         <Input
           key={label}
           className={`
-            min-w-[70px] 
+            min-w-[40px] 
             ${className}
+            p-0
+            text-center
             [appearance:textfield]
             [&::-webkit-outer-spin-button]:appearance-none
             [&::-webkit-inner-spin-button]:appearance-none

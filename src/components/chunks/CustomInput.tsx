@@ -1,7 +1,7 @@
 import { parsePhoneNumber } from "libphonenumber-js";
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { CalendarIcon } from "lucide-react";
+// import { CalendarIcon } from "lucide-react";
 import { Calendar } from "../ui/calendar";
 import { Input } from "../ui/input";
 import TruckDimsInput from "./TruckDimsInput";
@@ -21,8 +21,8 @@ interface CustomInputProps {
   className?: string;
 }
 
-const MIDDLE_WIDTH_INPUT = "min-w-[150px]";
-const SMALL_WIDTH_INPUT = "min-w-[90px]";
+// const MIDDLE_WIDTH_INPUT = "min-w-[150px]";
+// const SMALL_WIDTH_INPUT = "min-w-[90px]";
 
 // Function to strip non-digits and limit to 10 digits
 const stripAndLimitPhoneNumber = (input: string): string => {
@@ -69,17 +69,21 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
 
   switch (columnDef.type) {
     case "readonly":
-      return <div className={`${MIDDLE_WIDTH_INPUT} p-2 bg-gray-100 rounded`}>{value ?? ""}</div>;
+      // ${MIDDLE_WIDTH_INPUT} 
+      return <div className={`
+        p-2 bg-gray-100 rounded`}>{value ?? ""}</div>;
     case "date":
       return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <div 
-            className={`w-full h-full min-h-[2.5rem] flex items-center justify-between px-3 py-2 border rounded-md cursor-pointer hover:bg-gray-100 ${MIDDLE_WIDTH_INPUT}`} 
+              //  ${MIDDLE_WIDTH_INPUT}
+            className={` h-full min-h-[2.5rem] flex items-center justify-between px-3 py-2 border rounded-md cursor-pointer hover:bg-gray-100
+               `} 
             onClick={() => setIsOpen(true)}
           >
             {value ? <span>{formatDate(value)}</span> : <span className="text-gray-400">Select date</span>}
-            <CalendarIcon className="h-4 w-4 opacity-50" />
+            {/* <CalendarIcon className="h-4 w-4 opacity-50" /> */}
           </div>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
@@ -102,13 +106,18 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       );
     case "email":
       return (
-        <div className={MIDDLE_WIDTH_INPUT}>
-          <Input type="email" value={value ?? ""} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={className} />
+        <div 
+        // className={MIDDLE_WIDTH_INPUT}
+        >
+          <Input type="email" value={value ?? ""} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={`${className}  p-0 w-max`} />
         </div>
       );
     case "number":
       return (
-        <div className={SMALL_WIDTH_INPUT}>
+        <div 
+        // className={SMALL_WIDTH_INPUT}
+        className="w-full"
+        >
           <Input
             type="number"
             value={value ?? ""}
@@ -124,7 +133,9 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       );
     case "phone":
       return (
-        <div className={MIDDLE_WIDTH_INPUT}>
+        <div 
+        // className={MIDDLE_WIDTH_INPUT}
+        >
           <Input
             type="tel"
             value={displayValue}
@@ -146,13 +157,17 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       );
     case "truckDims":
       return (
-        <div className={MIDDLE_WIDTH_INPUT}>
+        <div 
+        // className={MIDDLE_WIDTH_INPUT}
+        >
           <TruckDimsInput value={value || ""} onChange={onChange} className={className} />
         </div>
       );
     case "checkbox":
       return (
-        <div className={SMALL_WIDTH_INPUT}>
+        <div 
+        // className={SMALL_WIDTH_INPUT}
+        >
           <Checkbox
             checked={value ?? false}
             onCheckedChange={(checked) => {
@@ -171,7 +186,9 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
           case "truckTypeSelect":
           case "latePickupSelect":
             return (
-              <div className={SMALL_WIDTH_INPUT}>
+              <div 
+              // className={SMALL_WIDTH_INPUT}
+              >
                 <Select onValueChange={onChange} value={value ?? undefined}>
                   <SelectTrigger className={className}>
                     <SelectValue placeholder="Select..." />
@@ -189,7 +206,9 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
           case "carrierSelect":
           case "driverSelect":
             return (
-              <div className={MIDDLE_WIDTH_INPUT}>
+              <div 
+              // className={MIDDLE_WIDTH_INPUT}
+              >
                 <Select onValueChange={onChange} value={value?.toString() ?? undefined}>
                   <SelectTrigger className={className}>
                     <SelectValue placeholder="Select..." />
@@ -207,7 +226,9 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
         }
       }
       return (
-        <div className={SMALL_WIDTH_INPUT}>
+        <div 
+        // className={SMALL_WIDTH_INPUT}
+        >
           <Input type="text" value={value ?? ""} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={className} />
         </div>
       );

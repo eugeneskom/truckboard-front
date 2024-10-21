@@ -1,63 +1,63 @@
-// Code for the WebSocketProvider component and the useWebSocket hook
-'use client';
+// // Code for the WebSocketProvider component and the useWebSocket hook
+// 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+// import React, { createContext, useContext, useEffect, useState } from 'react';
 
-interface WebSocketContextType {
-  socket: WebSocket | null;
-  sendMessage: (message: string) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  lastMessage: any;  
-}
+// interface WebSocketContextType {
+//   socket: WebSocket | null;
+//   sendMessage: (message: string) => void;
+//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   lastMessage: any;  
+// }
 
-const WebSocketContext = createContext<WebSocketContextType>({
-  socket: null,
-  sendMessage: () => {},
-  lastMessage: null, 
-});
+// const WebSocketContext = createContext<WebSocketContextType>({
+//   socket: null,
+//   sendMessage: () => {},
+//   lastMessage: null, 
+// });
 
-export const useWebSocket = () => useContext(WebSocketContext);
+// export const useWebSocket = () => useContext(WebSocketContext);
 
-export const WebSocketProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
-  const [socket, setSocket] = useState<WebSocket | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [lastMessage, setLastMessage] = useState<any>(null);  
+// export const WebSocketProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
+//   const [socket, setSocket] = useState<WebSocket | null>(null);
+//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   const [lastMessage, setLastMessage] = useState<any>(null);  
 
-  useEffect(() => {
-    const ws = new WebSocket('ws://localhost:3001');
+//   useEffect(() => {
+//     const ws = new WebSocket('ws://localhost:3001');
 
-    ws.onopen = () => {
-      console.log('Connected to WebSocket');
-    };
+//     ws.onopen = () => {
+//       console.log('Connected to WebSocket');
+//     };
 
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      console.log('Received message:', message);
-      setLastMessage(message);  
-    };
+//     ws.onmessage = (event) => {
+//       const message = JSON.parse(event.data);
+//       console.log('Received message:', message);
+//       setLastMessage(message);  
+//     };
 
-    ws.onclose = () => {
-      console.log('Disconnected from WebSocket');
-    };
+//     ws.onclose = () => {
+//       console.log('Disconnected from WebSocket');
+//     };
 
-    setSocket(ws);
+//     setSocket(ws);
 
-    return () => {
-      ws.close();
-    };
-  }, []);
+//     return () => {
+//       ws.close();
+//     };
+//   }, []);
 
-  const sendMessage = (message: string) => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(message);
-    } else {
-      console.error('WebSocket is not connected');
-    }
-  };
+//   const sendMessage = (message: string) => {
+//     if (socket && socket.readyState === WebSocket.OPEN) {
+//       socket.send(message);
+//     } else {
+//       console.error('WebSocket is not connected');
+//     }
+//   };
 
-  return (
-    <WebSocketContext.Provider value={{ socket, sendMessage, lastMessage }}>
-      {children}
-    </WebSocketContext.Provider>
-  );
-};
+//   return (
+//     <WebSocketContext.Provider value={{ socket, sendMessage, lastMessage }}>
+//       {children}
+//     </WebSocketContext.Provider>
+//   );
+// };
