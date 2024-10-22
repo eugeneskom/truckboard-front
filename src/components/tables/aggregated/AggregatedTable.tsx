@@ -77,21 +77,12 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({
   const { ref, inView } = useInView();
   const [editingCell, setEditingCell] = useState<{ rowIndex: number; field: string } | null>(null);
   const [updatedColumnDefinitions, setUpdatedColumnDefinitions] = useState(columnDefinitions);
-
   const [localData, setLocalData] = useState<SearchRateType[]>([]);
   const [filterOption, setFilterOption] = useState<UserSettings["searchMine"]>("all");
-
   const [carriers, setCarriers] = useState<{ id: number; company_name: string }[]>([]);
   const [drivers, setDrivers] = useState<{ id: number; name: string; lastname: string }[]>([]);
 
-  // console.log("AggregatedDataTable", data);
-  // const filterCarriers = () => {
-  //   if (filterOption === "mine" && user?.id) {
-  //     setLocalData(data.filter((search) => search.agent_id === user.id));
-  //   } else {
-  //     setLocalData(data);
-  //   }
-  // };
+
 
   const {
     data: infiniteData,

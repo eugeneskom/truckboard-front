@@ -1,14 +1,16 @@
 import { parsePhoneNumber } from "libphonenumber-js";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 // import { CalendarIcon } from "lucide-react";
 import { Calendar } from "../ui/calendar";
 import { Input } from "../ui/input";
 import TruckDimsInput from "./TruckDimsInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { ColumnDef } from "@/types";
+import { ColumnDef, UsCity } from "@/types";
 import { Checkbox } from "../ui/checkbox";
 import { format, parseISO, startOfDay } from 'date-fns';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "../ui/command";
+import { debounce } from "lodash";
 
 interface CustomInputProps {
   columnDef: ColumnDef;
@@ -61,7 +63,93 @@ const formatPhoneNumberForDisplay = (input: string | number | undefined | null):
 export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onChange, onFocus, onBlur, className }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [displayValue, setDisplayValue] = useState(formatPhoneNumberForDisplay(value || ""));
+  const [citySearchOpen, setCitySearchOpen] = useState(false);
+  const [cityResults, setCityResults] = useState<UsCity[]>([]);
+  const [citySearchTerm, setCitySearchTerm] = useState(value || "");
 
+  const debouncedCitySearch = useCallback(
+    debounce(async (term: string) => {
+      if (term.length < 3) {
+        setCityResults([]);
+        return;
+      }
+
+      const searchType = /^\d+$/.test(term) ? "zip" : "city";
+
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}api/search/${searchType}/${term}`
+        );
+        if (!response.ok) throw new Error("Error fetching data");
+        const data = await response.json();
+        setCityResults(data);
+      } catch (error) {
+        console.error(error);
+        setCityResults([]);
+      }
+    }, 300),
+    []
+  );
+
+  useEffect(() => {
+    if (columnDef.key === "pu_city" || columnDef.key === "destination") {
+      debouncedCitySearch(citySearchTerm);
+    }
+    return () => {
+      debouncedCitySearch.cancel();
+    };
+  }, [citySearchTerm, columnDef.key, debouncedCitySearch]);
+
+  const handleCitySelect = (result: UsCity) => {
+    onChange(`${result.city}, ${result.state_short}`);
+    setCitySearchOpen(false);
+    setCityResults([]);
+  };
+
+  const renderCityInput = () => {
+    return (
+      <Popover open={citySearchOpen} onOpenChange={setCitySearchOpen}>
+        <PopoverTrigger asChild>
+          <div className={`${columnDef.key === "pu_city" ? "w-24" : "w-80"}`}>
+            <Input
+              value={value || ""}
+              onChange={(e) => {
+                setCitySearchTerm(e.target.value);
+                onChange(e.target.value);
+              }}
+              onFocus={() => {
+                onFocus?.();
+                setCitySearchOpen(true);
+              }}
+              className={className}
+              placeholder={columnDef.key === "pu_city" ? "Enter city" : "Enter destination"}
+            />
+          </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-[300px] p-0" align="start">
+          <Command>
+            <CommandInput 
+              placeholder="Search cities..." 
+              value={citySearchTerm}
+              onValueChange={setCitySearchTerm}
+            />
+            <CommandEmpty>No cities found</CommandEmpty>
+            <CommandGroup>
+              {cityResults.map((result) => (
+                <CommandItem
+                  key={result.id}
+                  onSelect={() => handleCitySelect(result)}
+                  className="cursor-pointer"
+                >
+                  {`${result.city}, ${result.state_short} - ${result.zip_codes}`}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    );
+  };
   const handlePhoneChange = (input: string) => {
     const digits = stripAndLimitPhoneNumber(input);
     const formattedNumber = formatPhoneNumberForDisplay(digits);
@@ -107,6 +195,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
         </PopoverContent>
       </Popover>
       );
+    
     case "email":
       return (
         <div 
@@ -228,23 +317,27 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
               </div>
             );
         }
+      }else   if (columnDef.key === "pu_city" ) {
+        return renderCityInput();
+      }else{
+
+        const WIDTH = columnDef.key === "mc_number" 
+        ? WIDTH_SM 
+        // : columnDef.key === "pu_city" 
+        // ? "w-24" 
+        : columnDef.key === "destination"
+        ? "w-80" 
+        : columnDef.key === "agent_name"
+        ? "w-16"
+        : "w-24";
+        return (
+          <div 
+          className={WIDTH}
+          >
+            <Input type="text" value={value ?? ""} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={className} />
+          </div>
+        );
       }
 
-      const WIDTH = columnDef.key === "mc_number" 
-      ? WIDTH_SM 
-      : columnDef.key === "pu_city" 
-      ? "w-24" 
-      : columnDef.key === "destination"
-      ? "w-80" 
-      : columnDef.key === "agent_name"
-      ? "w-16"
-      : "w-24";
-      return (
-        <div 
-        className={WIDTH}
-        >
-          <Input type="text" value={value ?? ""} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={className} />
-        </div>
-      );
   }
 };
