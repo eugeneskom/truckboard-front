@@ -12,6 +12,9 @@ import { CustomInput } from "@/components/chunks/CustomInput";
 import { useAuth } from "@/hooks/useAuth";
 import AddSearch from "./AddSearch";
 
+import { useInView } from "react-intersection-observer";
+import { useInfiniteQuery } from "@tanstack/react-query";
+
 //  Column definitions
 export const columnDefinitions: ColumnDef[] = [
   // { key: "search_id", type: "readonly", label: "Search ID" },
@@ -51,37 +54,88 @@ export const columnDefinitions: ColumnDef[] = [
 
 interface AggregatedDataTableProps {
   data: SearchRateType[];
-  setData: React.Dispatch<React.SetStateAction<SearchRateType[]>>;
+  onLoadMore: () => void;
+  // setData: React.Dispatch<React.SetStateAction<SearchRateType[]>>;
 }
 
-const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData }) => {
-  const { user } = useAuth() as { user: UserData | null };
+interface AggregatedApiResponse {
+  data: SearchRateType[];
+  meta: {
+    currentPage: number;
+    totalPages: number;
+    totalRows: number;
+    hasMore: boolean;
+  };
+}
 
+const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({
+  data,
+  onLoadMore
+  // , setData
+}) => {
+  const { user } = useAuth() as { user: UserData | null };
+  const { ref, inView } = useInView();
   const [editingCell, setEditingCell] = useState<{ rowIndex: number; field: string } | null>(null);
   const [updatedColumnDefinitions, setUpdatedColumnDefinitions] = useState(columnDefinitions);
 
   const [localData, setLocalData] = useState<SearchRateType[]>([]);
-  const [filterOption, setFilterOption] = useState<UserSettings['searchMine']>("all");
+  const [filterOption, setFilterOption] = useState<UserSettings["searchMine"]>("all");
 
   const [carriers, setCarriers] = useState<{ id: number; company_name: string }[]>([]);
   const [drivers, setDrivers] = useState<{ id: number; name: string; lastname: string }[]>([]);
 
   // console.log("AggregatedDataTable", data);
-  const filterCarriers = () => {
-    if (filterOption === "mine" && user?.id) {
-      setLocalData(data.filter((search) => search.agent_id === user.id));
-    } else {
-      setLocalData(data);
-    }
-  }
+  // const filterCarriers = () => {
+  //   if (filterOption === "mine" && user?.id) {
+  //     setLocalData(data.filter((search) => search.agent_id === user.id));
+  //   } else {
+  //     setLocalData(data);
+  //   }
+  // };
 
+  const {
+    data: infiniteData,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+  } = useInfiniteQuery({
+    queryKey: ["aggregatedData", filterOption],
+    queryFn: async ({ pageParam = 1 }) => {
+      const { data } = await axios.get<AggregatedApiResponse>(`${process.env.NEXT_PUBLIC_SERVER_URL}api/aggregated`, {
+        params: {
+          page: pageParam,
+          limit: 10,
+          filter: filterOption,
+          userId: filterOption === "mine" ? user?.id : undefined,
+        },
+      });
+      return data;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: AggregatedApiResponse) => 
+      lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined,
+  });
 
-  console.log('filterOption',filterOption)
-
-  // Trigger the filtering function when filterOption changes
   useEffect(() => {
-    filterCarriers();
-  }, [filterOption, user]);
+    if (inView && hasNextPage && !isFetching) {
+      fetchNextPage();
+      onLoadMore();
+
+    }
+  }, [inView, hasNextPage, isFetching, fetchNextPage]);
+
+  
+
+  const allData = useMemo(() => {
+    if (!infiniteData) return [];
+    return infiniteData.pages.flatMap((page) => page.data).filter((item) => filterOption === "all" || (filterOption === "mine" && item.agent_id === user?.id));
+  }, [infiniteData, filterOption, user]);
+
+  console.log("allData", allData);
+
+  console.log("filterOption", filterOption);
+
+
 
   useEffect(() => {
     // console.log("AggregatedDataTable data: ", data);
@@ -98,7 +152,8 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
         console.error("Error updating data:", error);
       }
     },
-    [setData]
+    []
+    // [setData]
   );
 
   const debouncedUpdate = useMemo(
@@ -173,7 +228,7 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
       await axios.delete(`${process.env.NEXT_PUBLIC_SERVER_URL}api/searches/${searchNumber}`);
       const newData = localData.filter((row) => row.search_id !== searchNumber);
       setLocalData(newData);
-      setData(newData);
+      // setData(newData);
     } catch (error) {
       console.error("Error deleting search:", error);
     }
@@ -196,7 +251,6 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
     );
   }, [carriers, drivers]);
 
-
   useEffect(() => {
     const savedSettings = localStorage.getItem("userSettings");
     if (savedSettings) {
@@ -211,19 +265,15 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
 
   // console.log("newSearchData", newSearchData);
 
-  const handleFilterChange = (value: UserSettings['searchMine']) => {
+  const handleFilterChange = (value: UserSettings["searchMine"]) => {
     setFilterOption(value);
     const updatedSettings: UserSettings = { searchMine: value };
     localStorage.setItem("userSettings", JSON.stringify(updatedSettings));
   };
 
-
   return (
     <>
-      <Select
-        onValueChange={handleFilterChange}
-        defaultValue="all"
-      >
+      <Select onValueChange={handleFilterChange} defaultValue="all">
         <SelectTrigger className="w-48 ml-3 mb-3">
           <SelectValue placeholder="Filter carriers" />
         </SelectTrigger>
@@ -268,6 +318,14 @@ const AggregatedDataTable: React.FC<AggregatedDataTableProps> = ({ data, setData
               <TableCell colSpan={updatedColumnDefinitions.length + 1}>No data available</TableCell>
             </TableRow>
           )}
+
+          <tr ref={ref}>
+            {isFetching && (
+              <td colSpan={updatedColumnDefinitions.length + 1} className="text-center py-4">
+                Loading more...
+              </td>
+            )}
+          </tr>
         </TableBody>
       </Table>
       <AddSearch setLocalData={setLocalData} setCarriers={setCarriers} setDrivers={setDrivers} drivers={drivers} carriers={carriers} localData={localData} />

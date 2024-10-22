@@ -166,3 +166,15 @@ export interface UsCity {
 export interface UserSettings {
   searchMine: "all" | "mine";
 }
+
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    currentPage: number;
+    totalPages: number;
+    totalRows: number;
+    hasMore: boolean;
+  };
+}
+

@@ -72,6 +72,7 @@ function AddSearch({setDrivers, setCarriers, setLocalData, localData, carriers, 
       // setData(updatedData);
       setNewSearchData({});
       setSelectedCarrier(null);
+      setCarrierSearch("");
       setDrivers([]);
     } catch (error) {
       console.error("Error creating new search:", error);
@@ -116,8 +117,8 @@ function AddSearch({setDrivers, setCarriers, setLocalData, localData, carriers, 
           ))}
         </SelectContent>
       </Select>
-      <Input placeholder="Pickup City" onChange={(e) => setNewSearchData({ ...newSearchData, pu_city: e.target.value })} />
-      <Input placeholder="Destination" onChange={(e) => setNewSearchData({ ...newSearchData, destination: e.target.value })} />
+      <Input placeholder="Pickup City" value={newSearchData.pu_city} onChange={(e) => setNewSearchData({ ...newSearchData, pu_city: e.target.value })} />
+      <Input placeholder="Destination" value={newSearchData.destination} onChange={(e) => setNewSearchData({ ...newSearchData, destination: e.target.value })} />
       <Button onClick={handleAddSearch}>Create Search</Button>
     </DialogContent>
   </Dialog>

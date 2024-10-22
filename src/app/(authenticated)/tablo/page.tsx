@@ -5,26 +5,51 @@ import { useWebSocket, useWebSocketMessages } from "@/components/auth/socket/Web
 import { SearchRateType } from "@/types";
 import { useEffect, useState, useCallback } from "react";
 
-async function handleGetAggregatedData(): Promise<SearchRateType[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}api/aggregated`, {
-    cache: "no-cache",
-  });
-  return res.json();
+interface AggregatedApiResponse {
+  data: SearchRateType[];
+  meta: {
+    currentPage: number;
+    totalPages: number;
+    totalRows: number;
+    hasMore: boolean;
+  };
+}
+
+async function handleGetAggregatedData(page: number = 1): Promise<SearchRateType[]> {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SERVER_URL}api/aggregated?page=${page}&limit=10`,
+    {
+      cache: "no-cache",
+    }
+  );
+  const resJson: AggregatedApiResponse = await res.json();
+  return resJson.data;
 }
 
 function TabloPage() {
   const [data, setData] = useState<SearchRateType[]>([]);
   const { subscribeToMessages } = useWebSocket();
   const lastMessage = useWebSocketMessages();
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const fetchData = useCallback(async () => {
-    const res: SearchRateType[] = await handleGetAggregatedData();
-    setData(res);
+  const fetchData = useCallback(async (page: number) => {
+    const res = await handleGetAggregatedData(page);
+    if (page === 1) {
+      setData(res);
+    } else {
+      setData(prevData => [...prevData, ...res]);
+    }
   }, []);
 
+  console.log('Current page:', currentPage, 'Data:', data);
+
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchData(currentPage);
+  }, [fetchData, currentPage]);
+
+  const loadMore = useCallback(() => {
+    setCurrentPage(prev => prev + 1);
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,10 +92,16 @@ function TabloPage() {
     }
   }, [lastMessage]);
 
+  console.log('Data:', data);
+
   return (
     <div className="px-5">
       <h1 className="mb-3 text-center font-bold">Truckboard</h1>
-      <AggregatedDataTable data={data} setData={setData}/>
+      <AggregatedDataTable 
+        data={data} 
+        onLoadMore={loadMore}
+      />
+      {/* <GroupedTable data={data} /> */}
     </div>
   );
 }
