@@ -12,23 +12,16 @@ import {
 } from "react";
 import { Button } from "../../ui/button";
 import axios from "axios";
-import { useRouter } from "next/navigation";
-// import RemoveBtn from "@/components/buttons/RemoveBtn";
-// import EditBtn from "@/components/buttons/EditBtn";
-// import SaveBtn from "@/components/buttons/SaveBtn";
-// import UndoBtn from "@/components/buttons/UndoBtn";
+// import { useRouter } from "next/navigation";
+
 import AddTruck from "@/components/buttons/AddTruck";
 import ExistingTrucks from "./ExistingTrucks";
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-// import ExistingDrivers from "./ExistingDrivers";
-// import AddTruckNdriver from "./AddTruckNdriver";
 import AddTruckNdriver from "./AddTruckNdriver";
 import { CustomInput } from "@/components/chunks/CustomInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ExistingDrivers from "./ExistingDrivers";
 import { useAuth } from "@/hooks/useAuth";
-// import ExistingDrivers from "./ExistingDrivers";
-// import { debounce } from "lodash";
+
 
 export const columnDefinitions: ColumnDef[] = [
   { key: "home_city", type: "readonly", label: "Home City" },
@@ -38,19 +31,19 @@ export const columnDefinitions: ColumnDef[] = [
   { key: "company_phone", type: "phone", label: "Company Phone" },
   { key: "truck_type_spam", type: { type: "truckTypeSelect", options: ["VH", "SB"] }, label: "Truck Type" },
   { key: "spam", type: "checkbox", label: "Spam" },
+  { key: "active", type: "checkbox", label: "Active" },
 ];
 
-// Define the props interface that will be passed to your page component
+
 interface TableProps {
-  data: CarrierData[]; // This is the data type you expect from the backend
+  data: CarrierData[]; 
 }
 
-// Define the TableCarriers component to render the table
+
 function CarriersList({ data }: TableProps) {
-  const router = useRouter();
+  // const router = useRouter();
   const { user } = useAuth() as { user: UserData | null };
   console.log("CarriersList user: ", user);
-  // const [user, setUser] = useState<UserData | null>(null);
   const [isAddNew, setIsAddNew] = useState<boolean>(false);
   const [isAddTruck, setIsAddTruck] = useState<number | undefined | string>(0);
   const [carrierTrucks, setCarrierTrucks] = useState<TruckData[]>([]);
@@ -74,12 +67,6 @@ function CarriersList({ data }: TableProps) {
     filterCarriers();
   }, [filterOption, data, user]);
 
-  // useEffect(() => {
-  //   const storedUser = window.localStorage.getItem("user");
-  //   if (storedUser) {
-  //     setUser(JSON.parse(storedUser));
-  //   }
-  // }, []);
 
   useEffect(() => {
     if (data && data.length > 0) {
@@ -87,26 +74,11 @@ function CarriersList({ data }: TableProps) {
     }
   }, [data]);
 
-  // console.log("localData: ", localData);
-
-  // const handleRemoveCarrier = async (id: number | string | undefined) => {
-  //   try {
-  //     const response = await axios.delete(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers/${id}`);
-  //     console.log("Carrier Removed: ", response.data);
-  //     router.refresh();
-  //     // Trigger revalidation after successful delete
-  //   } catch (error) {
-  //     console.error("Remove carrier error:", error);
-  //   }
-  // };
 
   const handleGetTrucksByCarrier = async (id: number | string | undefined) => {
     if (!id) return console.log("handleGetTrucksByCarrier no id : ", id);
     try {
-      // const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers/${id}/details`);
       const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers/${id}/details`);
-
-      // console.log("Trucks by carrier:", response.data);
 
       if (response.data) {
         setCarrierTrucks(response.data.trucks);
@@ -204,10 +176,6 @@ function CarriersList({ data }: TableProps) {
                       />
                     </TableCell>
                   ))}
-
-                  {/* <TableCell>
-                    <RemoveBtn onClick={() => handleRemoveCarrier(row.id)} />
-                  </TableCell> */}
                   <TableCell>
                     <AddTruck onClick={() => handleFetchTrucks(row.id)} />
                   </TableCell>
@@ -244,7 +212,6 @@ function CarriersList({ data }: TableProps) {
                 {isAddNew ? "x" : "+"}
               </Button>
             </TableCell>
-            {/* )} */}
           </TableRow>
         </TableBody>
       </Table>
