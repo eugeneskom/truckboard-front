@@ -13,7 +13,7 @@ import {
 import { Button } from "../../ui/button";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import RemoveBtn from "@/components/buttons/RemoveBtn";
+// import RemoveBtn from "@/components/buttons/RemoveBtn";
 // import EditBtn from "@/components/buttons/EditBtn";
 // import SaveBtn from "@/components/buttons/SaveBtn";
 // import UndoBtn from "@/components/buttons/UndoBtn";
@@ -89,16 +89,16 @@ function CarriersList({ data }: TableProps) {
 
   // console.log("localData: ", localData);
 
-  const handleRemoveCarrier = async (id: number | string | undefined) => {
-    try {
-      const response = await axios.delete(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers/${id}`);
-      console.log("Carrier Removed: ", response.data);
-      router.refresh();
-      // Trigger revalidation after successful delete
-    } catch (error) {
-      console.error("Remove carrier error:", error);
-    }
-  };
+  // const handleRemoveCarrier = async (id: number | string | undefined) => {
+  //   try {
+  //     const response = await axios.delete(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers/${id}`);
+  //     console.log("Carrier Removed: ", response.data);
+  //     router.refresh();
+  //     // Trigger revalidation after successful delete
+  //   } catch (error) {
+  //     console.error("Remove carrier error:", error);
+  //   }
+  // };
 
   const handleGetTrucksByCarrier = async (id: number | string | undefined) => {
     if (!id) return console.log("handleGetTrucksByCarrier no id : ", id);
@@ -205,9 +205,9 @@ function CarriersList({ data }: TableProps) {
                     </TableCell>
                   ))}
 
-                  <TableCell>
+                  {/* <TableCell>
                     <RemoveBtn onClick={() => handleRemoveCarrier(row.id)} />
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell>
                     <AddTruck onClick={() => handleFetchTrucks(row.id)} />
                   </TableCell>
