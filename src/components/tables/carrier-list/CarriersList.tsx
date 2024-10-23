@@ -31,10 +31,10 @@ import { useAuth } from "@/hooks/useAuth";
 // import { debounce } from "lodash";
 
 export const columnDefinitions: ColumnDef[] = [
-  { key: "home_city", type: "text", label: "Home City" },
-  { key: "carrier_email", type: "email", label: "Carrier Email" },
-  { key: "mc_number", type: "number", label: "MC Number" },
-  { key: "company_name", type: "text", label: "Company Name" },
+  { key: "home_city", type: "readonly", label: "Home City" },
+  { key: "carrier_email", type: "readonly", label: "Carrier Email" },
+  { key: "mc_number", type: "readonly", label: "MC Number" },
+  { key: "company_name", type: "readonly", label: "Company Name" },
   { key: "company_phone", type: "phone", label: "Company Phone" },
   { key: "truck_type_spam", type: { type: "truckTypeSelect", options: ["VH", "SB"] }, label: "Truck Type" },
   { key: "spam", type: "checkbox", label: "Spam" },
