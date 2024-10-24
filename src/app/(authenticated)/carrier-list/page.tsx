@@ -9,7 +9,8 @@ async function fetchCarrierData() {
 
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers`, {
-      next: { revalidate: 36000 },
+      // next: { revalidate: 36000 },
+      cache: "no-cache",
       headers: {
         "Content-Type": "application/json",
         "Cookie": `token=${token?.value || ''}`,

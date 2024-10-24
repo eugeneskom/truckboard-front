@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Table, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { CarrierData, UserData } from "@/types";
+import { CarrierData, ColumnDef, UserData } from "@/types";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { columnDefinitions } from "./CarriersList";
+// import { columnDefinitions } from "./CarriersList";
 import { CustomInput } from "@/components/chunks/CustomInput";
 
 const initialCarrierData: CarrierData = {
@@ -15,15 +15,30 @@ const initialCarrierData: CarrierData = {
   company_phone: "",
   truck_type_spam: "",
   spam: false,
+  active: true
 };
+
+export const columnDefinitions: ColumnDef[] = [
+  { key: "home_city", type: "text", label: "Home City" },
+  { key: "carrier_email", type: "email", label: "Carrier Email" },
+  { key: "mc_number", type: "number", label: "MC Number" },
+  { key: "company_name", type: "text", label: "Company Name" },
+  { key: "company_phone", type: "phone", label: "Company Phone" },
+  { key: "truck_type_spam", type: { type: "truckTypeSelect", options: ["VH", "SB"] }, label: "Truck Type" },
+  { key: "spam", type: "checkbox", label: "Spam" },
+  { key: "active", type: "checkbox", label: "Active" },
+];
+
 
 type AddCarrierProps = {
   setIsAddNew: React.Dispatch<React.SetStateAction<boolean>>;
   user: UserData | null;
-  updatedColumnDefinitions: typeof columnDefinitions;
+  // updatedColumnDefinitions: typeof columnDefinitions;
 };
 
-function AddCarrier({ setIsAddNew, user, updatedColumnDefinitions }: AddCarrierProps) {
+function AddCarrier({ setIsAddNew, user
+  // , updatedColumnDefinitions
+ }: AddCarrierProps) {
   const router = useRouter();
   const [newCarrier, setNewCarrier] = useState<CarrierData>(initialCarrierData);
   const [isLoading, setIsLoading] = useState(false);
@@ -69,13 +84,13 @@ function AddCarrier({ setIsAddNew, user, updatedColumnDefinitions }: AddCarrierP
         <TableHeader>
           <TableRow>
          
-            {updatedColumnDefinitions.map((columnDef) => (
+            {columnDefinitions.map((columnDef) => (
               <TableHead key={columnDef.key}>{columnDef.label}</TableHead>
             ))}
           </TableRow>
         </TableHeader>
         <TableRow>
-          {updatedColumnDefinitions.map((columnDef) => (
+          {columnDefinitions.map((columnDef) => (
             <TableCell key={columnDef.key}>
               <CustomInput
                 columnDef={columnDef}

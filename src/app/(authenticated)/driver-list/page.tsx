@@ -4,8 +4,8 @@ import { DriverData } from '@/types';
 
 async function fetchDriversData(): Promise<DriverData[]> {
   const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}api/drivers`,{
-    // cache: "no-cache",
-    next: { revalidate: 36000 },
+    cache: "no-cache",
+    // next: { revalidate: 36000 },
   }); // Fetch data from the server
   console.log('process.env.NEXT_PUBLIC_SERVER_URL',process.env.NEXT_PUBLIC_SERVER_URL)
 

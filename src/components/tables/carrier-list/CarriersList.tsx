@@ -215,7 +215,9 @@ function CarriersList({ data }: TableProps) {
           </TableRow>
         </TableBody>
       </Table>
-      {isAddNew  && <AddCarrier setIsAddNew={setIsAddNew} user={user} updatedColumnDefinitions={updatedColumnDefinitions} />}
+      {isAddNew  && <AddCarrier setIsAddNew={setIsAddNew} user={user} 
+      // updatedColumnDefinitions={updatedColumnDefinitions} 
+      />}
     </>
   );
 }
