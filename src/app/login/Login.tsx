@@ -7,16 +7,20 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react"; // Import the loading icon
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
+
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER_URL}api/auth/login`,
@@ -26,15 +30,16 @@ export default function Login() {
       console.log('Login response:', response.data.success);
 
       if (response.data.success) {
-      console.log('Login response:', response.data.success);
-
-        router.push('/');
+        console.log('Login response:', response.data.success);
+        router.push('/tablo');
       } else {
         setError('Login failed. Please check your credentials.');
       }
     } catch (error) {
       console.error('Login error:', error);
       setError('Login failed. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -56,6 +61,7 @@ export default function Login() {
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
                   required
                 />
               </div>
@@ -67,6 +73,7 @@ export default function Login() {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
                   required
                 />
               </div>
@@ -74,8 +81,19 @@ export default function Login() {
             {error && (
               <p className="text-sm text-red-500 mt-2">{error}</p>
             )}
-            <Button className="w-full mt-4" type="submit">
-              Login
+            <Button 
+              className="w-full mt-4" 
+              type="submit" 
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Logging in...
+                </>
+              ) : (
+                'Login'
+              )}
             </Button>
           </form>
         </CardContent>

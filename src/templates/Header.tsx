@@ -34,7 +34,7 @@ function Header() {
             </Link>
           </NavigationMenuItem>
 
-          <NavigationMenuItem>
+          {/* <NavigationMenuItem>
             <Link href="/search-list" legacyBehavior passHref>
               <NavigationMenuLink className={navigationMenuTriggerStyle()}>Search List</NavigationMenuLink>
             </Link>
@@ -44,7 +44,7 @@ function Header() {
             <Link href="/rate-list" legacyBehavior passHref>
               <NavigationMenuLink className={navigationMenuTriggerStyle()}>Rate List</NavigationMenuLink>
             </Link>
-          </NavigationMenuItem>
+          </NavigationMenuItem> */}
 
           <NavigationMenuItem>
             <Link href="/tablo" legacyBehavior passHref>

@@ -10,6 +10,7 @@ export type CarrierData = {
   spam: boolean;
   driver_count?: number;
   truck_count?: number;
+  active: boolean;
 };
 
 export type TruckData = {

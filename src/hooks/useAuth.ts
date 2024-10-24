@@ -50,6 +50,7 @@ export function useAuth() {
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}api/auth/logout`, {}, { withCredentials: true });
       setUser(null);
+      // router.refresh()
       router.push('/login');
     } catch (error) {
       console.error('Logout error:', error);
