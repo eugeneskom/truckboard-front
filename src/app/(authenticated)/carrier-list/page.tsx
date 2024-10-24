@@ -4,7 +4,8 @@ import { CarrierData } from "@/types";
 
 async function fetchCarrierData() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}api/carriers`, {
-    cache: "no-cache",
+    // cache: "no-cache",
+    next: { revalidate: 36000 },
     headers: {
       "Content-Type": "application/json",
     },

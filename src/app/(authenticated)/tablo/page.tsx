@@ -18,8 +18,11 @@ interface AggregatedApiResponse {
 async function handleGetAggregatedData(page: number = 1): Promise<SearchRateType[]> {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SERVER_URL}api/aggregated?page=${page}&limit=10`,
+    
+    
     {
-      cache: "no-cache",
+      next: { revalidate: 36000 },
+      // cache: "no-cache",
     }
   );
   const resJson: AggregatedApiResponse = await res.json();
