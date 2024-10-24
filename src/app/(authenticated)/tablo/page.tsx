@@ -21,8 +21,8 @@ async function handleGetAggregatedData(page: number = 1): Promise<SearchRateType
     
     
     {
-      next: { revalidate: 36000 },
-      // cache: "no-cache",
+      // next: { revalidate: 36000 },
+      cache: "no-cache",
     }
   );
   const resJson: AggregatedApiResponse = await res.json();

@@ -1,4 +1,3 @@
-// src/app/(authenticated)/layout.tsx
 import { getServerSession } from '@/lib/auth';
 import { checkRoleAccess } from '@/lib/roleAccess';
 import { redirect } from 'next/navigation';
@@ -9,7 +8,7 @@ export default async function AuthLayout({
 }: {
   children: React.ReactNode
 }) {
-  headers();
+  const headersList = await headers();
   console.log('Checking session in AuthLayout');
   const session = await getServerSession();
   console.log('Session result:', session);
@@ -19,12 +18,12 @@ export default async function AuthLayout({
     return redirect('/login');
   }
 
-  const pathname = headers().get('x-invoke-path') || '';
+  const pathname = headersList.get('x-invoke-path') || '';
   const hasAccess = checkRoleAccess(session.role, pathname);
 
   if (!hasAccess) {
     console.log('User does not have access to this route');
-    return redirect('/unauthorized'); // need to reate this page to handle unauthorized access
+    return redirect('/login'); // need to create this page to handle unauthorized access
   }
 
   console.log('Session valid and user has access, rendering children');
