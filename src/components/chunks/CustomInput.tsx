@@ -8,7 +8,7 @@ import TruckDimsInput from "./TruckDimsInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { ColumnDef, UsCity } from "@/types";
 import { Checkbox } from "../ui/checkbox";
-import { format, parseISO, startOfDay } from 'date-fns';
+import { format, parseISO, startOfDay } from "date-fns";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "../ui/command";
 import { debounce } from "lodash";
 
@@ -44,15 +44,15 @@ const stripAndLimitPhoneNumber = (input: string): string => {
 };
 
 const formatDate = (dateString: string | null) => {
-  if (!dateString) return '';
+  if (!dateString) return "";
   const date = parseISO(dateString);
-  return format(date, 'yyyy-MM-dd');
+  return format(date, "yyyy-MM-dd");
 };
 
 // Function to format phone number for display
 const formatPhoneNumberForDisplay = (input: string | number | undefined | null): string => {
   // Convert input to string and remove non-digit characters
-  const digits = String(input || '').replace(/\D/g, '');
+  const digits = String(input || "").replace(/\D/g, "");
 
   if (digits.length === 0) return "";
   if (digits.length <= 3) return `(${digits}`;
@@ -65,47 +65,35 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
   const [displayValue, setDisplayValue] = useState(formatPhoneNumberForDisplay(value || ""));
   const [citySearchOpen, setCitySearchOpen] = useState(false);
   const [cityResults, setCityResults] = useState<UsCity[]>([]);
-  const [citySearchTerm, setCitySearchTerm] = useState(value || "");
-
-  const debouncedCitySearch = useCallback(
-    debounce(async (term: string) => {
-      if (term.length < 3) {
-        setCityResults([]);
-        return;
-      }
-
-      const searchType = /^\d+$/.test(term) ? "zip" : "city";
-
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}api/search/${searchType}/${term}`
-        );
-        if (!response.ok) throw new Error("Error fetching data");
-        const data = await response.json();
-        setCityResults(data);
-      } catch (error) {
-        console.error(error);
-        setCityResults([]);
-      }
-    }, 300),
-    []
-  );
-
-  useEffect(() => {
-    if (columnDef.key === "pu_city" || columnDef.key === "destination") {
-      debouncedCitySearch(citySearchTerm);
-    }
-    return () => {
-      debouncedCitySearch.cancel();
-    };
-  }, [citySearchTerm, columnDef.key, debouncedCitySearch]);
-
+  
   const handleCitySelect = (result: UsCity) => {
     onChange(`${result.city}, ${result.state_short}`);
     setCitySearchOpen(false);
     setCityResults([]);
   };
-
+  
+  const handleCitySearch = async (term: string) => {
+    // If term is empty or too short, clear results and return
+    if (!term || term.length < 3) {
+      setCityResults([]);
+      return;
+    }
+  
+    const searchType = /^\d+$/.test(term) ? "zip" : "city";
+  
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}api/search/${searchType}/${term}`
+      );
+      if (!response.ok) throw new Error("Error fetching data");
+      const data = await response.json();
+      setCityResults(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("City search error:", error);
+      setCityResults([]);
+    }
+  };
+  
   const renderCityInput = () => {
     return (
       <Popover open={citySearchOpen} onOpenChange={setCitySearchOpen}>
@@ -114,8 +102,9 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
             <Input
               value={value || ""}
               onChange={(e) => {
-                setCitySearchTerm(e.target.value);
-                onChange(e.target.value);
+                const newValue = e.target.value;
+                onChange(newValue);
+                handleCitySearch(newValue);
               }}
               onFocus={() => {
                 onFocus?.();
@@ -130,8 +119,11 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
           <Command>
             <CommandInput 
               placeholder="Search cities..." 
-              value={citySearchTerm}
-              onValueChange={setCitySearchTerm}
+              value={value || ""} 
+              onValueChange={(newValue) => {
+                onChange(newValue);
+                handleCitySearch(newValue);
+              }}
             />
             <CommandEmpty>No cities found</CommandEmpty>
             <CommandGroup>
@@ -150,6 +142,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       </Popover>
     );
   };
+
   const handlePhoneChange = (input: string) => {
     const digits = stripAndLimitPhoneNumber(input);
     const formattedNumber = formatPhoneNumberForDisplay(digits);
@@ -157,59 +150,62 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
     onChange(digits); // Store only digits in the state
   };
 
-
   switch (columnDef.type) {
     case "readonly":
-      // ${MIDDLE_WIDTH_INPUT} 
-      return <div className={`${columnDef.label === ""}
-        p-2 bg-gray-100 rounded`}>{value ?? ""}</div>;
+      // ${MIDDLE_WIDTH_INPUT}
+      return (
+        <div
+          className={`${columnDef.label === ""}
+        p-2 bg-gray-100 rounded`}
+        >
+          {value ?? ""}
+        </div>
+      );
     case "date":
       return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <div 
+          <PopoverTrigger asChild>
+            <div
               //  ${MIDDLE_WIDTH_INPUT}
-            className={`${WIDTH_SM} h-full min-h-[2.5rem] flex items-center justify-between py-1  cursor-pointer hover:bg-gray-100
-               `} 
-            onClick={() => setIsOpen(true)}
-          >
-            {value ? <span>{formatDate(value)}</span> : <span className="text-gray-400">Select date</span>}
-            {/* <CalendarIcon className="h-4 w-4 opacity-50" /> */}
-          </div>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={value ? parseISO(value) : undefined}
-            onSelect={(date) => {
-              if (date) {
-                const localDate = startOfDay(date);
-                onChange(format(localDate, "yyyy-MM-dd"));
-              } else {
-                onChange(null);
-              }
-              setIsOpen(false);
-            }}
-            initialFocus
-          />
-        </PopoverContent>
-      </Popover>
+              className={`${WIDTH_SM} h-full min-h-[2.5rem] flex items-center justify-between py-1  cursor-pointer hover:bg-gray-100
+               `}
+              onClick={() => setIsOpen(true)}
+            >
+              {value ? <span>{formatDate(value)}</span> : <span className="text-gray-400">Select date</span>}
+              {/* <CalendarIcon className="h-4 w-4 opacity-50" /> */}
+            </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={value ? parseISO(value) : undefined}
+              onSelect={(date) => {
+                if (date) {
+                  const localDate = startOfDay(date);
+                  onChange(format(localDate, "yyyy-MM-dd"));
+                } else {
+                  onChange(null);
+                }
+                setIsOpen(false);
+              }}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       );
-    
+
     case "email":
       return (
-        <div 
-        className={`w-36`}
-        >
+        <div className={`w-36`}>
           <Input type="email" value={value ?? ""} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={`${className}`} />
         </div>
       );
     case "number":
       const INPUT_WIDTH = columnDef.key === "dead_head" || "min_miles" || "max_miles" ? WIDTH_XSS : WIDTH_SM;
       return (
-        <div 
-        // className={SMALL_WIDTH_INPUT}
-        className={INPUT_WIDTH}
+        <div
+          // className={SMALL_WIDTH_INPUT}
+          className={INPUT_WIDTH}
         >
           <Input
             type="number"
@@ -226,9 +222,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       );
     case "phone":
       return (
-        <div 
-        className={`w-28`}
-        >
+        <div className={`w-28`}>
           <Input
             type="tel"
             value={displayValue}
@@ -250,7 +244,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       );
     case "truckDims":
       return (
-        <div 
+        <div
         // className={MIDDLE_WIDTH_INPUT}
         >
           <TruckDimsInput value={value || ""} onChange={onChange} className={className} />
@@ -258,7 +252,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
       );
     case "checkbox":
       return (
-        <div 
+        <div
         // className={SMALL_WIDTH_INPUT}
         >
           <Checkbox
@@ -279,7 +273,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
           case "truckTypeSelect":
           case "latePickupSelect":
             return (
-              <div 
+              <div
               // className={SMALL_WIDTH_INPUT}
               >
                 <Select onValueChange={onChange} value={value ?? undefined}>
@@ -299,7 +293,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
           case "carrierSelect":
           case "driverSelect":
             return (
-              <div 
+              <div
               // className={MIDDLE_WIDTH_INPUT}
               >
                 <Select onValueChange={onChange} value={value?.toString() ?? undefined}>
@@ -317,27 +311,24 @@ export const CustomInput: React.FC<CustomInputProps> = ({ columnDef, value, onCh
               </div>
             );
         }
-      }else   if (columnDef.key === "pu_city" ) {
+      } else if (columnDef.key === "pu_city") {
         return renderCityInput();
-      }else{
-
-        const WIDTH = columnDef.key === "mc_number" 
-        ? WIDTH_SM 
-        // : columnDef.key === "pu_city" 
-        // ? "w-24" 
-        : columnDef.key === "destination"
-        ? "w-80" 
-        : columnDef.key === "agent_name"
-        ? "w-16"
-        : "w-24";
+      } else {
+        const WIDTH =
+          columnDef.key === "mc_number"
+            ? WIDTH_SM
+            : // : columnDef.key === "pu_city"
+            // ? "w-24"
+            columnDef.key === "destination"
+            ? "w-80"
+            : columnDef.key === "agent_name"
+            ? "w-16"
+            : "w-24";
         return (
-          <div 
-          className={WIDTH}
-          >
+          <div className={WIDTH}>
             <Input type="text" value={value ?? ""} onChange={(e) => onChange(e.target.value || null)} onFocus={onFocus} onBlur={onBlur} className={className} />
           </div>
         );
       }
-
   }
 };
